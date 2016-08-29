@@ -748,6 +748,7 @@ enable_option_checking
 with_alsa
 with_jack
 with_oss
+with_opensles
 with_asihpi
 with_winapi
 with_asiodir
@@ -1411,6 +1412,7 @@ Optional Packages:
   --with-alsa             Enable support for ALSA [autodetect]
   --with-jack             Enable support for JACK [autodetect]
   --with-oss              Enable support for OSS [autodetect]
+  --with-opensles         Enable support for OpenSLES [autodetect]
   --with-asihpi           Enable support for ASIHPI [autodetect]
   --with-winapi           Select Windows API support
                           ([wmme|directx|asio|wasapi|wdmks][,...]) [wmme]
@@ -2686,6 +2688,14 @@ fi
 # Check whether --with-oss was given.
 if test "${with_oss+set}" = set; then :
   withval=$with_oss; with_oss=$withval
+fi
+
+
+# TODO opensles added this, dunno how to do the autodetect yet?
+
+# Check whether --with-opensles was given.
+if test "${with_opensles+set}" = set; then :
+  withval=$with_opensles; with_opensles=$withval
 fi
 
 
@@ -15613,6 +15623,52 @@ $as_echo "yes" >&6; }
 	have_jack=yes
 fi
 fi
+#TODO opensl we need a check, this needs the ndk. Don't really know how to do this.
+have_opensles=no
+if test "x$with_opensles" != "xno"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for slCreateEngine in -lOpenSLES" >&5
+$as_echo_n "checking for slCreateEngine in -lOpenSLES... " >&6; }
+if ${ac_cv_lib_OpenSLES_slCreateEngine+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lOpenSLES  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char slCreateEngine ();
+int
+main ()
+{
+return slCreateEngine ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_OpenSLES_slCreateEngine=yes
+else
+  ac_cv_lib_OpenSLES_slCreateEngine=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_OpenSLES_slCreateEngine" >&5
+$as_echo "$ac_cv_lib_OpenSLES_slCreateEngine" >&6; }
+if test "x$ac_cv_lib_OpenSLES_slCreateEngine" = xyes; then :
+  have_opensles=yes
+else
+  have_opensles=no
+fi
+
+fi
 
 
 
@@ -16129,10 +16185,27 @@ fi
         SHARED_FLAGS=""
         ;;
 
+  linux-androideabi* )
+                CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
+
+        if [ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]; then
+           LIBS="$LIBS -lOpenSLES"
+           DLL_LIBS="$DLL_LIBS -lOpenSLES"
+           OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
+           $as_echo "#define PA_USE_OPENSLES 1" >>confdefs.h
+
+        fi
+
+        DLL_LIBS="$DLL_LIBS -lm"
+        LIBS="$LIBS -lm"
+        PADLL="libportaudio.so"
+
+        OTHER_OBJS="$OTHER_OBJS src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
+
+        ;;
+
   *)
-
-        CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
-
+                CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
 $as_echo_n "checking for pthread_create in -lpthread... " >&6; }
 if ${ac_cv_lib_pthread_pthread_create+:} false; then :
@@ -18812,6 +18885,14 @@ $as_echo "
 " >&5
 $as_echo "
   Mac debug flags ............. $enable_mac_debug
+" >&6; }
+        ;;
+     *linux-androideabi*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result:
+  OpenSLES .................... $have_opensles
+" >&5
+$as_echo "
+  OpenSLES .................... $have_opensles
 " >&6; }
         ;;
      *)
