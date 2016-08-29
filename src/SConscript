@@ -182,6 +182,8 @@ if "COREAUDIO" in optionalImpls:
 	pa_mac_core.c  pa_mac_core_blocking.c  pa_mac_core_utilities.c 
     """.split()])
 
+# TODO opensles added sources
+CommonSources.append(os.path.join("hostapi", "opensles", "pa_hostapi_opensles.c"))
 
 sources = CommonSources + ImplSources
 
@@ -190,7 +192,7 @@ if Platform in Posix:
     # Add soname to library, this is so a reference is made to the versioned library in programs linking against libportaudio.so
     if Platform != 'darwin':
         sharedLibEnv.AppendUnique(SHLINKFLAGS="-Wl,-soname=libportaudio.so.%d" % int(ApiVer.split(".")[0]))
-sharedLib = sharedLibEnv.SharedLibrary(target="portaudio", source=sources)
+sharedLib = sharedLibEnv.SharedLibrary(target="portaudio", source=sourcesg)
 
 staticLib = env.StaticLibrary(target="portaudio", source=sources)
 

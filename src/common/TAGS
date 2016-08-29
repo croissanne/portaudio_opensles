@@ -1,0 +1,631 @@
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_svnrevision.h,45
+#define PA_SVN_REVISION PA_SVN_REVISION1,0
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_types.h,691
+#define PA_TYPES_HPA_TYPES_H2,19
+#define SIZEOF_SHORT SIZEOF_SHORT57,2272
+#define SIZEOF_INT SIZEOF_INT61,2322
+#define SIZEOF_LONG SIZEOF_LONG65,2371
+typedef signed short PaInt16;PaInt1670,2424
+typedef unsigned short PaUint16;PaUint1671,2454
+typedef signed int PaInt16;PaInt1673,2509
+typedef unsigned int PaUint16;PaUint1674,2537
+typedef signed short PaInt32;PaInt3280,2706
+typedef unsigned short PaUint32;PaUint3281,2736
+typedef signed int PaInt32;PaInt3283,2791
+typedef unsigned int PaUint32;PaUint3284,2819
+typedef signed long PaInt32;PaInt3286,2873
+typedef unsigned long PaUint32;PaUint3287,2902
+#define PA_VALIDATE_TYPE_SIZES PA_VALIDATE_TYPE_SIZES98,3321
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_debugprint.h,990
+#define PA_LOG_HPA_LOG_H2,17
+#define PA_DEBUG(PA_DEBUG97,3153
+#define PA_DEBUG(PA_DEBUG99,3201
+#define PA_LOGAPI(PA_LOGAPI104,3254
+#define PA_LOGAPI_ENTER(PA_LOGAPI_ENTER106,3297
+#define PA_LOGAPI_ENTER_PARAMS(PA_LOGAPI_ENTER_PARAMS108,3383
+#define PA_LOGAPI_EXIT(PA_LOGAPI_EXIT110,3476
+#define PA_LOGAPI_EXIT_PAERROR(PA_LOGAPI_EXIT_PAERROR112,3563
+#define PA_LOGAPI_EXIT_T(PA_LOGAPI_EXIT_T116,3755
+#define PA_LOGAPI_EXIT_PAERROR_OR_T_RESULT(PA_LOGAPI_EXIT_PAERROR_OR_T_RESULT120,3938
+#define PA_LOGAPI(PA_LOGAPI127,4289
+#define PA_LOGAPI_ENTER(PA_LOGAPI_ENTER128,4310
+#define PA_LOGAPI_ENTER_PARAMS(PA_LOGAPI_ENTER_PARAMS129,4348
+#define PA_LOGAPI_EXIT(PA_LOGAPI_EXIT130,4393
+#define PA_LOGAPI_EXIT_PAERROR(PA_LOGAPI_EXIT_PAERROR131,4430
+#define PA_LOGAPI_EXIT_T(PA_LOGAPI_EXIT_T132,4485
+#define PA_LOGAPI_EXIT_PAERROR_OR_T_RESULT(PA_LOGAPI_EXIT_PAERROR_OR_T_RESULT133,4554
+typedef void (*PaUtilLogCallback ) (const char *log);PaUtilLogCallback137,4662
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_ringbuffer.h,1302
+#define PA_RINGBUFFER_HPA_RINGBUFFER_H2,24
+typedef int32_t ring_buffer_size_t;ring_buffer_size_t75,3161
+typedef long ring_buffer_size_t;ring_buffer_size_t77,3223
+typedef long ring_buffer_size_t;ring_buffer_size_t79,3281
+typedef long ring_buffer_size_t;ring_buffer_size_t81,3363
+typedef long ring_buffer_size_t;ring_buffer_size_t83,3402
+typedef struct PaUtilRingBufferPaUtilRingBuffer93,3503
+    ring_buffer_size_t  bufferSize; /**< Number of elements in FIFO. Power of 2. Set by PaUtil_InitRingBuffer. */bufferSize95,3537
+    volatile ring_buffer_size_t  writeIndex; /**< Index of next writable element. Set by PaUtil_AdvanceRingBufferWriteIndex. */writeIndex96,3651
+    volatile ring_buffer_size_t  readIndex;  /**< Index of next readable element. Set by PaUtil_AdvanceRingBufferReadIndex. */readIndex97,3779
+    ring_buffer_size_t  bigMask;    /**< Used for wrapping indices with extra bit to distinguish full/empty. */bigMask98,3906
+    ring_buffer_size_t  smallMask;  /**< Used for fitting indices to buffer. */smallMask99,4018
+    ring_buffer_size_t  elementSizeBytes; /**< Number of bytes per element. */elementSizeBytes100,4098
+    char  *buffer;    /**< Pointer to the buffer containing the actual data. */buffer101,4177
+}PaUtilRingBuffer;PaUtilRingBuffer102,4257
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_allocation.c,830
+#define PA_INITIAL_LINK_COUNT_ PA_INITIAL_LINK_COUNT_61,2228
+struct PaUtilAllocationGroupLinkPaUtilAllocationGroupLink63,2266
+    struct PaUtilAllocationGroupLink *next;next65,2301
+    void *buffer;buffer66,2345
+static struct PaUtilAllocationGroupLink *AllocateLinks( long count,AllocateLinks75,2666
+PaUtilAllocationGroup* PaUtil_CreateAllocationGroup( void )PaUtil_CreateAllocationGroup103,3401
+void PaUtil_DestroyAllocationGroup( PaUtilAllocationGroup* group )PaUtil_DestroyAllocationGroup130,4057
+void* PaUtil_GroupAllocateMemory( PaUtilAllocationGroup* group, long size )PaUtil_GroupAllocateMemory146,4408
+void PaUtil_GroupFreeMemory( PaUtilAllocationGroup* group, void *buffer )PaUtil_GroupFreeMemory183,5336
+void PaUtil_FreeAllAllocations( PaUtilAllocationGroup* group )PaUtil_FreeAllAllocations220,6220
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_process.c,4125
+#define PA_FRAMES_PER_TEMP_BUFFER_WHEN_HOST_BUFFER_SIZE_IS_UNKNOWN_ PA_FRAMES_PER_TEMP_BUFFER_WHEN_HOST_BUFFER_SIZE_IS_UNKNOWN_54,1925
+#define PA_MIN_(PA_MIN_56,2002
+static unsigned long GCD( unsigned long a, unsigned long b )GCD60,2101
+static unsigned long LCM( unsigned long a, unsigned long b )LCM66,2250
+#define PA_MAX_(PA_MAX_71,2345
+static unsigned long CalculateFrameShift( unsigned long M, unsigned long N )CalculateFrameShift73,2396
+PaError PaUtil_InitializeBufferProcessor( PaUtilBufferProcessor* bp,PaUtil_InitializeBufferProcessor90,2717
+void PaUtil_TerminateBufferProcessor( PaUtilBufferProcessor* bp )PaUtil_TerminateBufferProcessor386,12975
+void PaUtil_ResetBufferProcessor( PaUtilBufferProcessor* bp )PaUtil_ResetBufferProcessor408,13582
+unsigned long PaUtil_GetBufferProcessorInputLatencyFrames( PaUtilBufferProcessor* bp )PaUtil_GetBufferProcessorInputLatencyFrames431,14344
+unsigned long PaUtil_GetBufferProcessorOutputLatencyFrames( PaUtilBufferProcessor* bp )PaUtil_GetBufferProcessorOutputLatencyFrames437,14484
+void PaUtil_SetInputFrameCount( PaUtilBufferProcessor* bp,PaUtil_SetInputFrameCount443,14626
+void PaUtil_SetNoInput( PaUtilBufferProcessor* bp )PaUtil_SetNoInput453,14880
+void PaUtil_SetInputChannel( PaUtilBufferProcessor* bp,PaUtil_SetInputChannel461,15022
+void PaUtil_SetInterleavedInputChannels( PaUtilBufferProcessor* bp,PaUtil_SetInterleavedInputChannels471,15306
+void PaUtil_SetNonInterleavedInputChannel( PaUtilBufferProcessor* bp,PaUtil_SetNonInterleavedInputChannel494,16012
+void PaUtil_Set2ndInputFrameCount( PaUtilBufferProcessor* bp,PaUtil_Set2ndInputFrameCount505,16327
+void PaUtil_Set2ndInputChannel( PaUtilBufferProcessor* bp,PaUtil_Set2ndInputChannel512,16475
+void PaUtil_Set2ndInterleavedInputChannels( PaUtilBufferProcessor* bp,PaUtil_Set2ndInterleavedInputChannels522,16758
+void PaUtil_Set2ndNonInterleavedInputChannel( PaUtilBufferProcessor* bp,PaUtil_Set2ndNonInterleavedInputChannel545,17479
+void PaUtil_SetOutputFrameCount( PaUtilBufferProcessor* bp,PaUtil_SetOutputFrameCount556,17797
+void PaUtil_SetNoOutput( PaUtilBufferProcessor* bp )PaUtil_SetNoOutput566,18046
+void PaUtil_SetOutputChannel( PaUtilBufferProcessor* bp,PaUtil_SetOutputChannel576,18318
+void PaUtil_SetInterleavedOutputChannels( PaUtilBufferProcessor* bp,PaUtil_SetInterleavedOutputChannels587,18630
+void PaUtil_SetNonInterleavedOutputChannel( PaUtilBufferProcessor* bp,PaUtil_SetNonInterleavedOutputChannel609,19294
+void PaUtil_Set2ndOutputFrameCount( PaUtilBufferProcessor* bp,PaUtil_Set2ndOutputFrameCount619,19560
+void PaUtil_Set2ndOutputChannel( PaUtilBufferProcessor* bp,PaUtil_Set2ndOutputChannel626,19710
+void PaUtil_Set2ndInterleavedOutputChannels( PaUtilBufferProcessor* bp,PaUtil_Set2ndInterleavedOutputChannels637,20025
+void PaUtil_Set2ndNonInterleavedOutputChannel( PaUtilBufferProcessor* bp,PaUtil_Set2ndNonInterleavedOutputChannel659,20703
+void PaUtil_BeginBufferProcessing( PaUtilBufferProcessor* bp,PaUtil_BeginBufferProcessing669,20979
+static unsigned long NonAdaptingProcess( PaUtilBufferProcessor *bp,NonAdaptingProcess704,22559
+static unsigned long AdaptingInputOnlyProcess( PaUtilBufferProcessor *bp,AdaptingInputOnlyProcess972,34125
+static unsigned long AdaptingOutputOnlyProcess( PaUtilBufferProcessor *bp,AdaptingOutputOnlyProcess1079,38288
+static void CopyTempOutputBuffersToHostOutputBuffers( PaUtilBufferProcessor *bp)CopyTempOutputBuffersToHostOutputBuffers1208,43279
+static unsigned long AdaptingProcess( PaUtilBufferProcessor *bp,AdaptingProcess1289,46812
+unsigned long PaUtil_EndBufferProcessing( PaUtilBufferProcessor* bp, int *streamCallbackResult )PaUtil_EndBufferProcessing1484,54771
+int PaUtil_IsBufferProcessorOutputEmpty( PaUtilBufferProcessor* bp )PaUtil_IsBufferProcessorOutputEmpty1656,61723
+unsigned long PaUtil_CopyInput( PaUtilBufferProcessor* bp,PaUtil_CopyInput1662,61850
+unsigned long PaUtil_CopyOutput( PaUtilBufferProcessor* bp,PaUtil_CopyOutput1733,64615
+unsigned long PaUtil_ZeroOutput( PaUtilBufferProcessor* bp, unsigned long frameCount )PaUtil_ZeroOutput1807,67442
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_hostapi.h,3163
+#define PA_HOSTAPI_HPA_HOSTAPI_H2,21
+#define PA_USE_SKELETON PA_USE_SKELETON64,2514
+#undef PA_USE_SKELETONPA_USE_SKELETON66,2595
+#define PA_USE_SKELETON PA_USE_SKELETON67,2618
+#define PA_USE_ASIO PA_USE_ASIO75,2916
+#undef PA_USE_ASIOPA_USE_ASIO77,2985
+#define PA_USE_ASIO PA_USE_ASIO78,3004
+#define PA_USE_DS PA_USE_DS82,3053
+#undef PA_USE_DSPA_USE_DS84,3116
+#define PA_USE_DS PA_USE_DS85,3133
+#define PA_USE_WMME PA_USE_WMME89,3182
+#undef PA_USE_WMMEPA_USE_WMME91,3251
+#define PA_USE_WMME PA_USE_WMME92,3270
+#define PA_USE_WASAPI PA_USE_WASAPI96,3323
+#undef PA_USE_WASAPIPA_USE_WASAPI98,3398
+#define PA_USE_WASAPI PA_USE_WASAPI99,3419
+#define PA_USE_WDMKS PA_USE_WDMKS103,3473
+#undef PA_USE_WDMKSPA_USE_WDMKS105,3545
+#define PA_USE_WDMKS PA_USE_WDMKS106,3565
+#define PA_USE_OSS PA_USE_OSS115,3932
+#undef PA_USE_OSSPA_USE_OSS117,3998
+#define PA_USE_OSS PA_USE_OSS118,4016
+#define PA_USE_ALSA PA_USE_ALSA122,4066
+#undef PA_USE_ALSAPA_USE_ALSA124,4135
+#define PA_USE_ALSA PA_USE_ALSA125,4154
+#define PA_USE_JACK PA_USE_JACK129,4205
+#undef PA_USE_JACKPA_USE_JACK131,4274
+#define PA_USE_JACK PA_USE_JACK132,4293
+#define PA_USE_SGI PA_USE_SGI136,4343
+#undef PA_USE_SGIPA_USE_SGI138,4409
+#define PA_USE_SGI PA_USE_SGI139,4427
+#define PA_USE_COREAUDIO PA_USE_COREAUDIO143,4482
+#undef PA_USE_COREAUDIOPA_USE_COREAUDIO145,4566
+#define PA_USE_COREAUDIO PA_USE_COREAUDIO146,4590
+#define PA_USE_ASIHPI PA_USE_ASIHPI150,4648
+#undef PA_USE_ASIHPIPA_USE_ASIHPI152,4723
+#define PA_USE_ASIHPI PA_USE_ASIHPI153,4744
+#define PA_USE_OPENSLES PA_USE_OPENSLES158,4821
+#undef PA_USE_OPENSLESPA_USE_OPENSLES160,4902
+#define PA_USE_OPENSLES PA_USE_OPENSLES161,4925
+typedef struct PaUtilPrivatePaFrontHostApiInfo {PaUtilPrivatePaFrontHostApiInfo175,5240
+    unsigned long baseDeviceIndex;baseDeviceIndex178,5291
+}PaUtilPrivatePaFrontHostApiInfo;PaUtilPrivatePaFrontHostApiInfo179,5326
+typedef struct PaUtilHostApiSpecificStreamInfoHeaderPaUtilHostApiSpecificStreamInfoHeader190,5809
+    unsigned long size;             /**< size of whole structure including this header */size192,5864
+    PaHostApiTypeId hostApiType;    /**< host API for which this data is intended */hostApiType193,5954
+    unsigned long version;          /**< structure version */version194,6039
+} PaUtilHostApiSpecificStreamInfoHeader;PaUtilHostApiSpecificStreamInfoHeader195,6101
+typedef struct PaUtilHostApiRepresentation {PaUtilHostApiRepresentation202,6292
+    PaUtilPrivatePaFrontHostApiInfo privatePaFrontInfo;privatePaFrontInfo203,6337
+    PaHostApiInfo info;info212,6796
+    PaDeviceInfo** deviceInfos;deviceInfos214,6821
+    void (*Terminate)( struct PaUtilHostApiRepresentation *hostApi );Terminate221,7043
+    PaError (*OpenStream)( struct PaUtilHostApiRepresentation *hostApi,OpenStream318,11210
+    PaError (*IsFormatSupported)( struct PaUtilHostApiRepresentation *hostApi,IsFormatSupported329,11737
+} PaUtilHostApiRepresentation;PaUtilHostApiRepresentation333,12026
+typedef PaError PaUtilHostApiInitializer( PaUtilHostApiRepresentation**, PaHostApiIndex );PaUtilHostApiInitializer347,12581
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_stream.c,823
+void PaUtil_InitializeStreamInterface( PaUtilStreamInterface *streamInterface,PaUtil_InitializeStreamInterface51,1895
+void PaUtil_InitializeStreamRepresentation( PaUtilStreamRepresentation *streamRepresentation,PaUtil_InitializeStreamRepresentation80,3417
+void PaUtil_TerminateStreamRepresentation( PaUtilStreamRepresentation *streamRepresentation )PaUtil_TerminateStreamRepresentation99,4119
+PaError PaUtil_DummyRead( PaStream* stream,PaUtil_DummyRead105,4256
+PaError PaUtil_DummyWrite( PaStream* stream,PaUtil_DummyWrite117,4573
+signed long PaUtil_DummyGetReadAvailable( PaStream* stream )PaUtil_DummyGetReadAvailable129,4896
+signed long PaUtil_DummyGetWriteAvailable( PaStream* stream )PaUtil_DummyGetWriteAvailable137,5049
+double PaUtil_DummyGetCpuLoad( PaStream* stream )PaUtil_DummyGetCpuLoad145,5202
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_util.h,33
+#define PA_UTIL_HPA_UTIL_H2,18
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_dither.c,657
+#define PA_DITHER_BITS_ PA_DITHER_BITS_54,2044
+void PaUtil_InitializeTriangularDitherState( PaUtilTriangularDitherGenerator *state )PaUtil_InitializeTriangularDitherState57,2077
+PaInt32 PaUtil_Generate16BitTriangularDither( PaUtilTriangularDitherGenerator *state )PaUtil_Generate16BitTriangularDither65,2256
+#define DITHER_SHIFT_ DITHER_SHIFT_77,2748
+#define PA_FLOAT_DITHER_SCALE_ PA_FLOAT_DITHER_SCALE_90,3168
+static const float const_float_dither_scale_ = PA_FLOAT_DITHER_SCALE_;const_float_dither_scale_91,3234
+float PaUtil_GenerateFloatTriangularDither( PaUtilTriangularDitherGenerator *state )PaUtil_GenerateFloatTriangularDither93,3306
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_memorybarrier.h,1974
+#   define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier68,2721
+#   define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier69,2778
+#   define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier70,2835
+#      define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier74,3042
+#      define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier75,3105
+#      define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier76,3168
+#      define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier82,3548
+#      define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier83,3622
+#      define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier84,3696
+#      define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier87,3904
+#      define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier88,3980
+#      define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier89,4056
+#         define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier94,4306
+#         define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier95,4350
+#         define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier96,4394
+#   define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier107,4947
+#   define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier108,5006
+#   define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier109,5060
+#   define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier111,5141
+#   define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier112,5179
+#   define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier113,5217
+#   define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier115,5305
+#   define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier116,5374
+#   define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier117,5443
+#      define PaUtil_FullMemoryBarrier(PaUtil_FullMemoryBarrier122,5674
+#      define PaUtil_ReadMemoryBarrier(PaUtil_ReadMemoryBarrier123,5715
+#      define PaUtil_WriteMemoryBarrier(PaUtil_WriteMemoryBarrier124,5756
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_ringbuffer.c,1443
+ring_buffer_size_t PaUtil_InitializeRingBuffer( PaUtilRingBuffer *rbuf, ring_buffer_size_t elementSizeBytes, ring_buffer_size_t elementCount, void *dataPtr )PaUtil_InitializeRingBuffer66,2459
+ring_buffer_size_t PaUtil_GetRingBufferReadAvailable( const PaUtilRingBuffer *rbuf )PaUtil_GetRingBufferReadAvailable80,3087
+ring_buffer_size_t PaUtil_GetRingBufferWriteAvailable( const PaUtilRingBuffer *rbuf )PaUtil_GetRingBufferWriteAvailable86,3377
+void PaUtil_FlushRingBuffer( PaUtilRingBuffer *rbuf )PaUtil_FlushRingBuffer93,3703
+ring_buffer_size_t PaUtil_GetRingBufferWriteRegions( PaUtilRingBuffer *rbuf, ring_buffer_size_t elementCount,PaUtil_GetRingBufferWriteRegions104,4136
+ring_buffer_size_t PaUtil_AdvanceRingBufferWriteIndex( PaUtilRingBuffer *rbuf, ring_buffer_size_t elementCount )PaUtil_AdvanceRingBufferWriteIndex139,5443
+ring_buffer_size_t PaUtil_GetRingBufferReadRegions( PaUtilRingBuffer *rbuf, ring_buffer_size_t elementCount,PaUtil_GetRingBufferReadRegions154,6115
+ring_buffer_size_t PaUtil_AdvanceRingBufferReadIndex( PaUtilRingBuffer *rbuf, ring_buffer_size_t elementCount )PaUtil_AdvanceRingBufferReadIndex187,7436
+ring_buffer_size_t PaUtil_WriteRingBuffer( PaUtilRingBuffer *rbuf, const void *data, ring_buffer_size_t elementCount )PaUtil_WriteRingBuffer198,7951
+ring_buffer_size_t PaUtil_ReadRingBuffer( PaUtilRingBuffer *rbuf, void *data, ring_buffer_size_t elementCount )PaUtil_ReadRingBuffer220,8741
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_cpuload.c,693
+void PaUtil_InitializeCpuLoadMeasurer( PaUtilCpuLoadMeasurer* measurer, double sampleRate )PaUtil_InitializeCpuLoadMeasurer60,2321
+void PaUtil_ResetCpuLoadMeasurer( PaUtilCpuLoadMeasurer* measurer )PaUtil_ResetCpuLoadMeasurer68,2529
+void PaUtil_BeginCpuLoadMeasurement( PaUtilCpuLoadMeasurer* measurer )PaUtil_BeginCpuLoadMeasurement73,2634
+void PaUtil_EndCpuLoadMeasurement( PaUtilCpuLoadMeasurer* measurer, unsigned long framesProcessed )PaUtil_EndCpuLoadMeasurement79,2766
+#define LOWPASS_COEFFICIENT_0 LOWPASS_COEFFICIENT_093,3454
+#define LOWPASS_COEFFICIENT_1 LOWPASS_COEFFICIENT_194,3492
+double PaUtil_GetCpuLoad( PaUtilCpuLoadMeasurer* measurer )PaUtil_GetCpuLoad102,3722
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_trace.c,1827
+static char const *traceTextArray[PA_MAX_TRACE_RECORDS];traceTextArray58,2056
+static int traceIntArray[PA_MAX_TRACE_RECORDS];traceIntArray59,2113
+static int traceIndex = 0;traceIndex60,2161
+static int traceBlock = 0;traceBlock61,2188
+void PaUtil_ResetTraceMessages()PaUtil_ResetTraceMessages64,2288
+void PaUtil_DumpTraceMessages()PaUtil_DumpTraceMessages70,2418
+void PaUtil_AddTraceMessage( const char *msg, int data )PaUtil_AddTraceMessage86,2895
+typedef unsigned long long  PaUint64;PaUint64105,3497
+typedef struct __PaHighPerformanceLog__PaHighPerformanceLog107,3536
+    unsigned    magik;magik109,3576
+    int         writePtr;writePtr110,3599
+    int         readPtr;readPtr111,3625
+    int         size;size112,3650
+    double      refTime;refTime113,3672
+    char*       data;data114,3697
+} PaHighPerformanceLog;PaHighPerformanceLog115,3719
+static const unsigned kMagik = 0xcafebabe;kMagik117,3744
+#define USEC_PER_SEC USEC_PER_SEC119,3788
+int PaUtil_InitializeHighSpeedLog( LogHandle* phLog, unsigned maxSizeInBytes )PaUtil_InitializeHighSpeedLog121,3826
+void PaUtil_ResetHighSpeedLogTimeRef( LogHandle hLog )PaUtil_ResetHighSpeedLogTimeRef143,4420
+typedef struct __PaLogEntryHeader__PaLogEntryHeader150,4615
+    int    size;size152,4651
+    double timeStamp;timeStamp153,4668
+} PaLogEntryHeader;PaLogEntryHeader154,4690
+#define _vsnprintf _vsnprintf157,4728
+#define min(min158,4757
+int PaUtil_AddHighSpeedLogMessage( LogHandle hLog, const char* fmt, ... )PaUtil_AddHighSpeedLogMessage162,4801
+void PaUtil_DumpHighSpeedLog( LogHandle hLog, const char* fileName )PaUtil_DumpHighSpeedLog200,5944
+void PaUtil_DiscardHighSpeedLog( LogHandle hLog )PaUtil_DiscardHighSpeedLog222,6794
+int PaUtil_TraceStubToSatisfyLinker(void)PaUtil_TraceStubToSatisfyLinker234,7138
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_allocation.h,346
+#define PA_ALLOCATION_HPA_ALLOCATION_H2,24
+    long linkCount;linkCount67,2566
+    struct PaUtilAllocationGroupLink *linkBlocks;linkBlocks68,2586
+    struct PaUtilAllocationGroupLink *spareLinks;spareLinks69,2636
+    struct PaUtilAllocationGroupLink *allocations;allocations70,2686
+}PaUtilAllocationGroup;PaUtilAllocationGroup71,2737
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_debugprint.c,407
+	#define WIN32_LEAN_AND_MEAN WIN32_LEAN_AND_MEAN60,2369
+static PaUtilLogCallback userCB = NULL;userCB65,2469
+void PaUtil_SetDebugPrintFunction(PaUtilLogCallback cb)PaUtil_SetDebugPrintFunction68,2532
+	#define VSNPRINTF VSNPRINTF81,2930
+	#define VSNPRINTF VSNPRINTF83,2968
+#define PA_LOG_BUF_SIZE PA_LOG_BUF_SIZE86,3006
+void PaUtil_DebugPrint( const char *format, ... )PaUtil_DebugPrint88,3036
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_endianness.h,603
+#define PA_ENDIANNESS_HPA_ENDIANNESS_H2,24
+          #define PA_LITTLE_ENDIANPA_LITTLE_ENDIAN71,2821
+          #undef PA_BIG_ENDIANPA_BIG_ENDIAN74,2906
+          #define PA_BIG_ENDIANPA_BIG_ENDIAN78,2998
+          #undef PA_LITTLE_ENDIANPA_LITTLE_ENDIAN81,3083
+            #define PA_LITTLE_ENDIAN PA_LITTLE_ENDIAN101,3985
+            #define PA_BIG_ENDIANPA_BIG_ENDIAN103,4073
+    #define PA_VALIDATE_ENDIANNESSPA_VALIDATE_ENDIANNESS124,4816
+        #define PA_VALIDATE_ENDIANNESS PA_VALIDATE_ENDIANNESS127,4891
+        #define PA_VALIDATE_ENDIANNESS PA_VALIDATE_ENDIANNESS133,5147
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_dither.h,324
+#define PA_DITHER_HPA_DITHER_H2,20
+typedef struct PaUtilTriangularDitherGenerator{PaUtilTriangularDitherGenerator61,2174
+    PaUint32 previous;previous62,2222
+    PaUint32 randSeed1;randSeed163,2245
+    PaUint32 randSeed2;randSeed264,2269
+} PaUtilTriangularDitherGenerator;PaUtilTriangularDitherGenerator65,2293
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_converters.c,5209
+PaSampleFormat PaUtil_SelectClosestAvailableFormat(PaUtil_SelectClosestAvailableFormat70,2815
+#define PA_SELECT_FORMAT_(PA_SELECT_FORMAT_123,4223
+#define PA_SELECT_CONVERTER_DITHER_CLIP_(PA_SELECT_CONVERTER_DITHER_CLIP_142,5527
+#define PA_SELECT_CONVERTER_DITHER_(PA_SELECT_CONVERTER_DITHER_159,6669
+#define PA_USE_CONVERTER_(PA_USE_CONVERTER_168,7163
+#define PA_UNITY_CONVERSION_(PA_UNITY_CONVERSION_173,7352
+PaUtilConverter* PaUtil_SelectConverter( PaSampleFormat sourceFormat,PaUtil_SelectConverter178,7547
+PaUtilConverterTable paConverters = {paConverters245,12655
+#define PA_CLIP_(PA_CLIP_322,15802
+static const float const_1_div_128_ = 1.0f / 128.0f;  /* 8 bit multiplier */const_1_div_128_326,15914
+static const float const_1_div_32768_ = 1.0f / 32768.f; /* 16 bit multiplier */const_1_div_32768_328,15992
+static const double const_1_div_2147483648_ = 1.0 / 2147483648.0; /* 32 bit multiplier */const_1_div_2147483648_330,16073
+static void Float32_To_Int32(Float32_To_Int32334,16246
+static void Float32_To_Int32_Dither(Float32_To_Int32_Dither361,17022
+static void Float32_To_Int32_Clip(Float32_To_Int32_Clip390,18109
+static void Float32_To_Int32_DitherClip(Float32_To_Int32_DitherClip419,18993
+static void Float32_To_Int24(Float32_To_Int24451,20201
+static void Float32_To_Int24_Dither(Float32_To_Int24_Dither485,21284
+static void Float32_To_Int24_Clip(Float32_To_Int24_Clip521,22493
+static void Float32_To_Int24_DitherClip(Float32_To_Int24_DitherClip556,23617
+static void Float32_To_Int16(Float32_To_Int16593,24900
+static void Float32_To_Int16_Dither(Float32_To_Int16_Dither619,25635
+static void Float32_To_Int16_Clip(Float32_To_Int16_Clip647,26463
+static void Float32_To_Int16_DitherClip(Float32_To_Int16_DitherClip673,27232
+static void Float32_To_Int8(Float32_To_Int8703,28192
+static void Float32_To_Int8_Dither(Float32_To_Int8_Dither724,28826
+static void Float32_To_Int8_Clip(Float32_To_Int8_Clip747,29628
+static void Float32_To_Int8_DitherClip(Float32_To_Int8_DitherClip769,30311
+static void Float32_To_UInt8(Float32_To_UInt8794,31202
+static void Float32_To_UInt8_Dither(Float32_To_UInt8_Dither815,31870
+static void Float32_To_UInt8_Clip(Float32_To_UInt8_Clip838,32695
+static void Float32_To_UInt8_DitherClip(Float32_To_UInt8_DitherClip860,33394
+static void Int32_To_Float32(Int32_To_Float32885,34301
+static void Int32_To_Int24(Int32_To_Int24905,34912
+static void Int32_To_Int24_Dither(Int32_To_Int24_Dither933,35839
+static void Int32_To_Int16(Int32_To_Int16949,36474
+static void Int32_To_Int16_Dither(Int32_To_Int16_Dither969,37063
+static void Int32_To_Int8(Int32_To_Int8991,37740
+static void Int32_To_Int8_Dither(Int32_To_Int8_Dither1011,38340
+static void Int32_To_UInt8(Int32_To_UInt81033,39028
+static void Int32_To_UInt8_Dither(Int32_To_UInt8_Dither1053,39639
+static void Int24_To_Float32(Int24_To_Float321073,40232
+static void Int24_To_Int32(Int24_To_Int321106,41230
+static void Int24_To_Int16(Int24_To_Int161139,42189
+static void Int24_To_Int16_Dither(Int24_To_Int16_Dither1173,43118
+static void Int24_To_Int8(Int24_To_Int81207,44166
+static void Int24_To_Int8_Dither(Int24_To_Int8_Dither1237,44973
+static void Int24_To_UInt8(Int24_To_UInt81271,46036
+static void Int24_To_UInt8_Dither(Int24_To_UInt8_Dither1301,46901
+static void Int16_To_Float32(Int16_To_Float321317,47536
+static void Int16_To_Int32(Int16_To_Int321338,48229
+static void Int16_To_Int24(Int16_To_Int241362,48920
+static void Int16_To_Int8(Int16_To_Int81394,49821
+static void Int16_To_Int8_Dither(Int16_To_Int8_Dither1414,50421
+static void Int16_To_UInt8(Int16_To_UInt81434,51009
+static void Int16_To_UInt8_Dither(Int16_To_UInt8_Dither1454,51619
+static void Int8_To_Float32(Int8_To_Float321474,52212
+static void Int8_To_Int32(Int8_To_Int321495,52832
+static void Int8_To_Int24(Int8_To_Int241515,53412
+static void Int8_To_Int16(Int8_To_Int161544,54185
+static void Int8_To_UInt8(Int8_To_UInt81564,54781
+static void UInt8_To_Float32(UInt8_To_Float321584,55394
+static void UInt8_To_Int32(UInt8_To_Int321605,56027
+static void UInt8_To_Int24(UInt8_To_Int241625,56617
+static void UInt8_To_Int16(UInt8_To_Int161654,57440
+static void UInt8_To_Int8(UInt8_To_Int81674,58047
+static void Copy_8_To_8(Copy_8_To_81694,58658
+static void Copy_16_To_16(Copy_16_To_161715,59303
+static void Copy_24_To_24(Copy_24_To_241736,59938
+static void Copy_32_To_32(Copy_32_To_321759,60599
+PaUtilConverterTable paConverters = {paConverters1780,61178
+PaUtilZeroer* PaUtil_SelectZeroer( PaSampleFormat destinationFormat )PaUtil_SelectZeroer1857,65935
+PaUtilZeroerTable paZeroers = {paZeroers1882,66593
+static void ZeroU8( void *destinationBuffer, signed int destinationStride,ZeroU81896,67023
+static void Zero8( void *destinationBuffer, signed int destinationStride,Zero81911,67366
+static void Zero16( void *destinationBuffer, signed int destinationStride,Zero161926,67706
+static void Zero24( void *destinationBuffer, signed int destinationStride,Zero241941,68038
+static void Zero32( void *destinationBuffer, signed int destinationStride,Zero321958,68427
+PaUtilZeroerTable paZeroers = {paZeroers1973,68759
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_cpuload.h,295
+#define PA_CPULOAD_HPA_CPULOAD_H2,21
+    double samplingPeriod;samplingPeriod57,2042
+    double measurementStartTime;measurementStartTime58,2069
+    double averageLoad;averageLoad59,2102
+} PaUtilCpuLoadMeasurer; /**< @todo need better name than measurer */PaUtilCpuLoadMeasurer60,2126
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_converters.h,4596
+#define PA_CONVERTERS_HPA_CONVERTERS_H2,24
+typedef void PaUtilConverter(PaUtilConverter90,3563
+typedef void PaUtilZeroer(PaUtilZeroer119,4937
+    PaUtilConverter *Float32_To_Int32;Float32_To_Int32139,5575
+    PaUtilConverter *Float32_To_Int32_Dither;Float32_To_Int32_Dither140,5614
+    PaUtilConverter *Float32_To_Int32_Clip;Float32_To_Int32_Clip141,5660
+    PaUtilConverter *Float32_To_Int32_DitherClip;Float32_To_Int32_DitherClip142,5704
+    PaUtilConverter *Float32_To_Int24;Float32_To_Int24144,5755
+    PaUtilConverter *Float32_To_Int24_Dither;Float32_To_Int24_Dither145,5794
+    PaUtilConverter *Float32_To_Int24_Clip;Float32_To_Int24_Clip146,5840
+    PaUtilConverter *Float32_To_Int24_DitherClip;Float32_To_Int24_DitherClip147,5884
+    PaUtilConverter *Float32_To_Int16;Float32_To_Int16149,5939
+    PaUtilConverter *Float32_To_Int16_Dither;Float32_To_Int16_Dither150,5978
+    PaUtilConverter *Float32_To_Int16_Clip;Float32_To_Int16_Clip151,6024
+    PaUtilConverter *Float32_To_Int16_DitherClip;Float32_To_Int16_DitherClip152,6068
+    PaUtilConverter *Float32_To_Int8;Float32_To_Int8154,6119
+    PaUtilConverter *Float32_To_Int8_Dither;Float32_To_Int8_Dither155,6157
+    PaUtilConverter *Float32_To_Int8_Clip;Float32_To_Int8_Clip156,6202
+    PaUtilConverter *Float32_To_Int8_DitherClip;Float32_To_Int8_DitherClip157,6245
+    PaUtilConverter *Float32_To_UInt8;Float32_To_UInt8159,6295
+    PaUtilConverter *Float32_To_UInt8_Dither;Float32_To_UInt8_Dither160,6334
+    PaUtilConverter *Float32_To_UInt8_Clip;Float32_To_UInt8_Clip161,6380
+    PaUtilConverter *Float32_To_UInt8_DitherClip;Float32_To_UInt8_DitherClip162,6424
+    PaUtilConverter *Int32_To_Float32;Int32_To_Float32164,6475
+    PaUtilConverter *Int32_To_Int24;Int32_To_Int24165,6514
+    PaUtilConverter *Int32_To_Int24_Dither;Int32_To_Int24_Dither166,6551
+    PaUtilConverter *Int32_To_Int16;Int32_To_Int16167,6595
+    PaUtilConverter *Int32_To_Int16_Dither;Int32_To_Int16_Dither168,6632
+    PaUtilConverter *Int32_To_Int8;Int32_To_Int8169,6676
+    PaUtilConverter *Int32_To_Int8_Dither;Int32_To_Int8_Dither170,6712
+    PaUtilConverter *Int32_To_UInt8;Int32_To_UInt8171,6755
+    PaUtilConverter *Int32_To_UInt8_Dither;Int32_To_UInt8_Dither172,6792
+    PaUtilConverter *Int24_To_Float32;Int24_To_Float32174,6837
+    PaUtilConverter *Int24_To_Int32;Int24_To_Int32175,6876
+    PaUtilConverter *Int24_To_Int16;Int24_To_Int16176,6913
+    PaUtilConverter *Int24_To_Int16_Dither;Int24_To_Int16_Dither177,6950
+    PaUtilConverter *Int24_To_Int8;Int24_To_Int8178,6994
+    PaUtilConverter *Int24_To_Int8_Dither;Int24_To_Int8_Dither179,7030
+    PaUtilConverter *Int24_To_UInt8;Int24_To_UInt8180,7073
+    PaUtilConverter *Int24_To_UInt8_Dither;Int24_To_UInt8_Dither181,7110
+    PaUtilConverter *Int16_To_Float32;Int16_To_Float32183,7155
+    PaUtilConverter *Int16_To_Int32;Int16_To_Int32184,7194
+    PaUtilConverter *Int16_To_Int24;Int16_To_Int24185,7231
+    PaUtilConverter *Int16_To_Int8;Int16_To_Int8186,7268
+    PaUtilConverter *Int16_To_Int8_Dither;Int16_To_Int8_Dither187,7304
+    PaUtilConverter *Int16_To_UInt8;Int16_To_UInt8188,7347
+    PaUtilConverter *Int16_To_UInt8_Dither;Int16_To_UInt8_Dither189,7384
+    PaUtilConverter *Int8_To_Float32;Int8_To_Float32191,7429
+    PaUtilConverter *Int8_To_Int32;Int8_To_Int32192,7467
+    PaUtilConverter *Int8_To_Int24;Int8_To_Int24193,7503
+    PaUtilConverter *Int8_To_Int16;Int8_To_Int16194,7539
+    PaUtilConverter *Int8_To_UInt8;Int8_To_UInt8195,7575
+    PaUtilConverter *UInt8_To_Float32;UInt8_To_Float32197,7616
+    PaUtilConverter *UInt8_To_Int32;UInt8_To_Int32198,7655
+    PaUtilConverter *UInt8_To_Int24;UInt8_To_Int24199,7692
+    PaUtilConverter *UInt8_To_Int16;UInt8_To_Int16200,7729
+    PaUtilConverter *UInt8_To_Int8;UInt8_To_Int8201,7766
+    PaUtilConverter *Copy_8_To_8;       /* copy without any conversion */Copy_8_To_8203,7803
+    PaUtilConverter *Copy_16_To_16;     /* copy without any conversion */Copy_16_To_16204,7877
+    PaUtilConverter *Copy_24_To_24;     /* copy without any conversion */Copy_24_To_24205,7951
+    PaUtilConverter *Copy_32_To_32;     /* copy without any conversion */Copy_32_To_32206,8025
+} PaUtilConverterTable;PaUtilConverterTable207,8099
+    PaUtilZeroer *ZeroU8; /* unsigned 8 bit, zero == 128 */ZeroU8234,9135
+    PaUtilZeroer *Zero8;Zero8235,9195
+    PaUtilZeroer *Zero16;Zero16236,9220
+    PaUtilZeroer *Zero24;Zero24237,9246
+    PaUtilZeroer *Zero32;Zero32238,9272
+} PaUtilZeroerTable;PaUtilZeroerTable239,9298
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_front.c,5042
+#define paVersionMajor paVersionMajor88,3381
+#define paVersionMinor paVersionMinor94,3563
+#define paVersionSubMinor paVersionSubMinor100,3723
+#define paVersion paVersion107,3950
+#define STRINGIFY(STRINGIFY109,4041
+#define TOSTRING(TOSTRING110,4065
+#define PA_VERSION_STRING_ PA_VERSION_STRING_112,4099
+#define PA_VERSION_TEXT_ PA_VERSION_TEXT_113,4212
+int Pa_GetVersion( void )Pa_GetVersion115,4319
+const char* Pa_GetVersionText( void )Pa_GetVersionText120,4372
+static PaVersionInfo versionInfo_ = {versionInfo_125,4444
+const PaVersionInfo* Pa_GetVersionInfo()Pa_GetVersionInfo133,4693
+#define PA_LAST_HOST_ERROR_TEXT_LENGTH_ PA_LAST_HOST_ERROR_TEXT_LENGTH_138,4765
+static char lastHostErrorText_[ PA_LAST_HOST_ERROR_TEXT_LENGTH_ + 1 ] = {0};lastHostErrorText_140,4812
+static PaHostErrorInfo lastHostErrorInfo_ = { (PaHostApiTypeId)-1, 0, lastHostErrorText_ };lastHostErrorInfo_142,4890
+void PaUtil_SetLastHostErrorInfo( PaHostApiTypeId hostApiType, long errorCode,PaUtil_SetLastHostErrorInfo145,4984
+static PaUtilHostApiRepresentation **hostApis_ = 0;hostApis_156,5278
+static int hostApisCount_ = 0;hostApisCount_157,5330
+static int defaultHostApiIndex_ = 0;defaultHostApiIndex_158,5361
+static int initializationCount_ = 0;initializationCount_159,5398
+static int deviceCount_ = 0;deviceCount_160,5435
+PaUtilStreamRepresentation *firstOpenStream_ = NULL;firstOpenStream_162,5465
+#define PA_IS_INITIALISED_ PA_IS_INITIALISED_165,5520
+static int CountHostApiInitializers( void )CountHostApiInitializers168,5577
+static void TerminateHostApis( void )TerminateHostApis178,5735
+static PaError InitializeHostApis( void )InitializeHostApis200,6230
+static int FindHostApi( PaDeviceIndex device, int *hostSpecificDeviceIndex )FindHostApi282,8911
+static void AddOpenStream( PaStream* stream )AddOpenStream310,9406
+static void RemoveOpenStream( PaStream* stream )RemoveOpenStream317,9596
+static void CloseOpenStreams( void )CloseOpenStreams345,10235
+PaError Pa_Initialize( void )Pa_Initialize355,10492
+PaError Pa_Terminate( void )Pa_Terminate385,11042
+const PaHostErrorInfo* Pa_GetLastHostErrorInfo( void )Pa_GetLastHostErrorInfo414,11507
+const char *Pa_GetErrorText( PaError errorCode )Pa_GetErrorText420,11600
+PaHostApiIndex Pa_HostApiTypeIdToHostApiIndex( PaHostApiTypeId type )Pa_HostApiTypeIdToHostApiIndex468,14518
+PaError PaUtil_GetHostApiRepresentation( struct PaUtilHostApiRepresentation **hostApi,PaUtil_GetHostApiRepresentation500,15230
+PaError PaUtil_DeviceIndexToHostApiDeviceIndex(PaUtil_DeviceIndexToHostApiDeviceIndex529,15803
+PaHostApiIndex Pa_GetHostApiCount( void )Pa_GetHostApiCount551,16265
+PaHostApiIndex Pa_GetDefaultHostApi( void )Pa_GetDefaultHostApi572,16622
+const PaHostApiInfo* Pa_GetHostApiInfo( PaHostApiIndex hostApi )Pa_GetHostApiInfo601,17213
+PaDeviceIndex Pa_HostApiDeviceIndexToDeviceIndex( PaHostApiIndex hostApi, int hostApiDeviceIndex )Pa_HostApiDeviceIndexToDeviceIndex642,18315
+PaDeviceIndex Pa_GetDeviceCount( void )Pa_GetDeviceCount680,19368
+PaDeviceIndex Pa_GetDefaultInputDevice( void )Pa_GetDefaultInputDevice701,19728
+PaDeviceIndex Pa_GetDefaultOutputDevice( void )Pa_GetDefaultOutputDevice724,20174
+const PaDeviceInfo* Pa_GetDeviceInfo( PaDeviceIndex device )Pa_GetDeviceInfo747,20628
+static int SampleFormatIsValid( PaSampleFormat format )SampleFormatIsValid790,21932
+static PaError ValidateOpenStreamParameters(ValidateOpenStreamParameters874,25374
+PaError Pa_IsFormatSupported( const PaStreamParameters *inputParameters,Pa_IsFormatSupported1032,31052
+PaError Pa_OpenStream( PaStream** stream,Pa_OpenStream1136,35535
+PaError Pa_OpenDefaultStream( PaStream** stream,Pa_OpenDefaultStream1270,41373
+PaError PaUtil_ValidateStreamPointer( PaStream* stream )PaUtil_ValidateStreamPointer1353,44807
+PaError Pa_CloseStream( PaStream* stream )Pa_CloseStream1366,45103
+PaError Pa_SetStreamFinishedCallback( PaStream *stream, PaStreamFinishedCallback* streamFinishedCallback )Pa_SetStreamFinishedCallback1400,46232
+PaError Pa_StartStream( PaStream *stream )Pa_StartStream1429,47085
+PaError Pa_StopStream( PaStream *stream )Pa_StopStream1455,47695
+PaError Pa_AbortStream( PaStream *stream )Pa_AbortStream1481,48297
+PaError Pa_IsStreamStopped( PaStream *stream )Pa_IsStreamStopped1507,48903
+PaError Pa_IsStreamActive( PaStream *stream )Pa_IsStreamActive1523,49305
+const PaStreamInfo* Pa_GetStreamInfo( PaStream *stream )Pa_GetStreamInfo1540,49704
+PaTime Pa_GetStreamTime( PaStream *stream )Pa_GetStreamTime1576,50777
+double Pa_GetStreamCpuLoad( PaStream* stream )Pa_GetStreamCpuLoad1605,51447
+PaError Pa_ReadStream( PaStream* stream,Pa_ReadStream1635,52130
+PaError Pa_WriteStream( PaStream* stream,Pa_WriteStream1675,53207
+signed long Pa_GetStreamReadAvailable( PaStream* stream )Pa_GetStreamReadAvailable1714,54298
+signed long Pa_GetStreamWriteAvailable( PaStream* stream )Pa_GetStreamWriteAvailable1743,55060
+PaError Pa_GetSampleSize( PaSampleFormat format )Pa_GetSampleSize1772,55827
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_stream.h,1711
+#define PA_STREAM_HPA_STREAM_H2,20
+#define PA_STREAM_MAGIC PA_STREAM_MAGIC58,2009
+    PaError (*Close)( PaStream* stream );Close68,2303
+    PaError (*Start)( PaStream *stream );Start69,2345
+    PaError (*Stop)( PaStream *stream );Stop70,2387
+    PaError (*Abort)( PaStream *stream );Abort71,2428
+    PaError (*IsStopped)( PaStream *stream );IsStopped72,2470
+    PaError (*IsActive)( PaStream *stream );IsActive73,2516
+    PaTime (*GetTime)( PaStream *stream );GetTime74,2561
+    double (*GetCpuLoad)( PaStream* stream );GetCpuLoad75,2604
+    PaError (*Read)( PaStream* stream, void *buffer, unsigned long frames );Read76,2650
+    PaError (*Write)( PaStream* stream, const void *buffer, unsigned long frames );Write77,2727
+    signed long (*GetReadAvailable)( PaStream* stream );GetReadAvailable78,2811
+    signed long (*GetWriteAvailable)( PaStream* stream );GetWriteAvailable79,2868
+} PaUtilStreamInterface;PaUtilStreamInterface80,2926
+typedef struct PaUtilStreamRepresentation {PaUtilStreamRepresentation147,5494
+    unsigned long magic;    /**< set to PA_STREAM_MAGIC */magic148,5538
+    struct PaUtilStreamRepresentation *nextOpenStream; /**< field used by multi-api code */nextOpenStream149,5597
+    PaUtilStreamInterface *streamInterface;streamInterface150,5689
+    PaStreamCallback *streamCallback;streamCallback151,5733
+    PaStreamFinishedCallback *streamFinishedCallback;streamFinishedCallback152,5771
+    void *userData;userData153,5825
+    PaStreamInfo streamInfo;streamInfo154,5845
+} PaUtilStreamRepresentation;PaUtilStreamRepresentation155,5874
+#define PA_STREAM_REP(PA_STREAM_REP189,6865
+#define PA_STREAM_INTERFACE(PA_STREAM_INTERFACE197,7083
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_process.h,3982
+#define PA_PROCESS_HPA_PROCESS_H2,21
+    paUtilFixedHostBufferSize,paUtilFixedHostBufferSize221,10889
+    paUtilBoundedHostBufferSize,paUtilBoundedHostBufferSize224,10989
+    paUtilUnknownHostBufferSize,paUtilUnknownHostBufferSize227,11075
+    paUtilVariableHostBufferSizePartialUsageAllowedpaUtilVariableHostBufferSizePartialUsageAllowed236,11551
+}PaUtilHostBufferSizeMode;PaUtilHostBufferSizeMode237,11603
+typedef struct PaUtilChannelDescriptor{PaUtilChannelDescriptor242,11760
+    void *data;data243,11800
+    unsigned int stride;  /**< stride in samples, not bytes */stride244,11816
+}PaUtilChannelDescriptor;PaUtilChannelDescriptor245,11879
+    unsigned long framesPerUserBuffer;framesPerUserBuffer254,12113
+    unsigned long framesPerHostBuffer;framesPerHostBuffer255,12152
+    PaUtilHostBufferSizeMode hostBufferSizeMode;hostBufferSizeMode257,12192
+    int useNonAdaptingProcess;useNonAdaptingProcess258,12241
+    int userOutputSampleFormatIsEqualToHost;userOutputSampleFormatIsEqualToHost259,12272
+    int userInputSampleFormatIsEqualToHost;userInputSampleFormatIsEqualToHost260,12317
+    unsigned long framesPerTempBuffer;framesPerTempBuffer261,12361
+    unsigned int inputChannelCount;inputChannelCount263,12401
+    unsigned int bytesPerHostInputSample;bytesPerHostInputSample264,12437
+    unsigned int bytesPerUserInputSample;bytesPerUserInputSample265,12479
+    int userInputIsInterleaved;userInputIsInterleaved266,12521
+    PaUtilConverter *inputConverter;inputConverter267,12553
+    PaUtilZeroer *inputZeroer;inputZeroer268,12590
+    unsigned int outputChannelCount;outputChannelCount270,12626
+    unsigned int bytesPerHostOutputSample;bytesPerHostOutputSample271,12663
+    unsigned int bytesPerUserOutputSample;bytesPerUserOutputSample272,12706
+    int userOutputIsInterleaved;userOutputIsInterleaved273,12749
+    PaUtilConverter *outputConverter;outputConverter274,12782
+    PaUtilZeroer *outputZeroer;outputZeroer275,12820
+    unsigned long initialFramesInTempInputBuffer;initialFramesInTempInputBuffer277,12853
+    unsigned long initialFramesInTempOutputBuffer;initialFramesInTempOutputBuffer278,12903
+    void *tempInputBuffer;          /**< used for slips, block adaption, and conversion. */tempInputBuffer280,12955
+    void **tempInputBufferPtrs;     /**< storage for non-interleaved buffer pointers, NULL for interleaved user input */tempInputBufferPtrs281,13047
+    unsigned long framesInTempInputBuffer; /**< frames remaining in input buffer from previous adaption iteration */framesInTempInputBuffer282,13168
+    void *tempOutputBuffer;         /**< used for slips, block adaption, and conversion. */tempOutputBuffer284,13286
+    void **tempOutputBufferPtrs;    /**< storage for non-interleaved buffer pointers, NULL for interleaved user output */tempOutputBufferPtrs285,13378
+    unsigned long framesInTempOutputBuffer; /**< frames remaining in input buffer from previous adaption iteration */framesInTempOutputBuffer286,13500
+    PaStreamCallbackTimeInfo *timeInfo;timeInfo288,13619
+    PaStreamCallbackFlags callbackStatusFlags;callbackStatusFlags290,13660
+    int hostInputIsInterleaved;hostInputIsInterleaved292,13708
+    unsigned long hostInputFrameCount[2];hostInputFrameCount293,13740
+    PaUtilChannelDescriptor *hostInputChannels[2]; /**< pointers to arrays of channel descriptors.hostInputChannels294,13782
+    int hostOutputIsInterleaved;hostOutputIsInterleaved299,14237
+    unsigned long hostOutputFrameCount[2];hostOutputFrameCount300,14270
+    PaUtilChannelDescriptor *hostOutputChannels[2]; /**< pointers to arrays of channel descriptors.hostOutputChannels301,14313
+    PaUtilTriangularDitherGenerator ditherGenerator;ditherGenerator307,14775
+    double samplePeriod;samplePeriod309,14829
+    PaStreamCallback *streamCallback;streamCallback311,14855
+    void *userData;userData312,14893
+} PaUtilBufferProcessor;PaUtilBufferProcessor313,14913
+
+/home/sanne/Downloads/portaudio/portaudio2/src/common/pa_trace.h,782
+#define PA_TRACE_HPA_TRACE_H2,19
+#define PA_TRACE_REALTIME_EVENTS PA_TRACE_REALTIME_EVENTS69,2771
+#define PA_MAX_TRACE_RECORDS PA_MAX_TRACE_RECORDS73,2926
+typedef void* LogHandle;LogHandle90,3281
+#define PaUtil_ResetTraceMessages(PaUtil_ResetTraceMessages100,3637
+#define PaUtil_AddTraceMessage(PaUtil_AddTraceMessage101,3684
+#define PaUtil_DumpTraceMessages(PaUtil_DumpTraceMessages102,3736
+#define PaUtil_InitializeHighSpeedLog(PaUtil_InitializeHighSpeedLog104,3783
+#define PaUtil_ResetHighSpeedLogTimeRef(PaUtil_ResetHighSpeedLogTimeRef105,3849
+#define PaUtil_AddHighSpeedLogMessage(PaUtil_AddHighSpeedLogMessage106,3895
+#define PaUtil_DumpHighSpeedLog(PaUtil_DumpHighSpeedLog107,3944
+#define PaUtil_DiscardHighSpeedLog(PaUtil_DiscardHighSpeedLog108,3992
