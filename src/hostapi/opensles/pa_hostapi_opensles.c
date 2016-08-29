@@ -69,12 +69,14 @@
 /* TODO opensles android logging */
 #include <android/log.h>
 #include <time.h>
+
 #define APPNAME "PORTAUDIO_OPENSL"
 #define NUMBER_OF_ENGINE_OPTIONS 2
 #define NUMBER_OF_BUFFERS 2
 
-/* prototypes for functions declared in this file */
+#define PA_MIN_( a, b ) ( ((a)<(b)) ? (a) : (b) )
 
+/* prototypes for functions declared in this file */
 #ifdef __cplusplus
 extern "C"
 {
@@ -543,15 +545,16 @@ typedef struct PaSkeletonStream
     SLPlayItf playerItf;
     SLPrefetchStatusItf prefetchStatusItf;
     SLAndroidSimpleBufferQueueItf outputBufferQueueItf;
+    SLVolumeItf volumeItf;
 
     SLObjectItf outputMixObject;
 
+    SLboolean isBlocking;
     SLboolean isStopped;
     SLboolean isActive;
     SLboolean doStop;
     SLboolean doAbort;
     pthread_mutex_t mtx;
-    pthread_cond_t cond;
     int callbackResult;
 
     PaStreamCallbackFlags cbFlags;
@@ -562,7 +565,7 @@ typedef struct PaSkeletonStream
 PaSkeletonStream;
 
 /* see pa_hostapi.h for a list of validity guarantees made about OpenStream parameters */
-
+/* TODO remove 
 static PaError WaitCondition( PaSkeletonStream *stream )
 {
     PaError result = paNoError;
@@ -570,11 +573,11 @@ static PaError WaitCondition( PaSkeletonStream *stream )
     PaTime pt = PaUtil_GetTime();
     struct timespec ts;
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "waiting");
-    ts.tv_sec = (time_t) floor( pt + 10 * 60 /* 10 minutes */ );
+    ts.tv_sec = (time_t) floor( pt + 10 * 60  10 minutes  );
     ts.tv_nsec = (long) ((pt - floor( pt )) * 1000000000);
-    /* XXX: Best enclose in loop, in case of spurious wakeups? */
+     XXX: Best enclose in loop, in case of spurious wakeups? 
     err = pthread_cond_timedwait( &stream->cond, &stream->mtx, &ts );
-    /* Make sure we didn't time out */
+    Make sure we didn't time out 
     if ( err == ETIMEDOUT ) {
         result = paTimedOut;
         goto error;
@@ -587,6 +590,7 @@ static PaError WaitCondition( PaSkeletonStream *stream )
 error:
     return result;
 }
+*/
 
 static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, PaSkeletonStream *stream, int channelCount, double sampleRate);
 static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData);
@@ -711,8 +715,8 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
             framesPerHostBuffer = (unsigned long) ( outputParameters->suggestedLatency * sampleRate);
         }
     } else {
-        /* TODO opensles if user buffer is specified, just double it? */
-        framesPerHostBuffer = framesPerBuffer * 2;
+        /* TODO opensles if user buffer is specified, it's probably blocking, make them the same amount */
+        framesPerHostBuffer = framesPerBuffer;
     }
     stream = (PaSkeletonStream*)PaUtil_AllocateMemory( sizeof(PaSkeletonStream) );
 
@@ -772,7 +776,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     */
 
     stream->framesPerHostCallback = framesPerHostBuffer;
-
+    stream->isBlocking = streamCallback ? SL_BOOLEAN_FALSE : SL_BOOLEAN_TRUE;
     InitializeOutputStream(openslHostApi, stream, outputChannelCount, sampleRate);
 
     *s = (PaStream*)stream;
@@ -794,8 +798,8 @@ error:
 static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, PaSkeletonStream *stream, int channelCount, double sampleRate) {
     SLresult slResult;
     int i;
-    SLInterfaceID ids[2] = { SL_IID_BUFFERQUEUE, SL_IID_PREFETCHSTATUS }; // , SL_IID_ANDROIDCONFIGURATION };
-    SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE }; // , SL_BOOLEAN_TRUE };
+    SLInterfaceID ids[3] = { SL_IID_BUFFERQUEUE, SL_IID_PREFETCHSTATUS, SL_IID_VOLUME }; // , SL_IID_ANDROIDCONFIGURATION };
+    SLboolean req[3] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE }; // , SL_BOOLEAN_TRUE };
     SLuint32 channelMasks[] = { SL_SPEAKER_FRONT_CENTER, SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT };
     SLDataLocator_AndroidSimpleBufferQueue outputSourceBufferQueue = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUMBER_OF_BUFFERS };
     SLDataFormat_PCM  format_pcm = { SL_DATAFORMAT_PCM, channelCount, sampleRate * 1000.0, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, channelMasks[channelCount-1], SL_BYTEORDER_LITTLEENDIAN };
@@ -806,11 +810,12 @@ static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostA
     SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, stream->outputMixObject };
     SLDataSink audioSnk = { &loc_outmix, &format_pcm };
 
-    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &(stream->audioPlayer), &audioSrc, &audioSnk, 2, ids, req);
+    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &stream->audioPlayer, &audioSrc, &audioSnk, 3, ids, req);
     slResult = (*stream->audioPlayer)->Realize(stream->audioPlayer, SL_BOOLEAN_FALSE);
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PLAY, &(stream->playerItf));
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_BUFFERQUEUE, &(stream->outputBufferQueueItf));
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PREFETCHSTATUS, &(stream->prefetchStatusItf));
+    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PLAY, &stream->playerItf);
+    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_BUFFERQUEUE, &stream->outputBufferQueueItf);
+    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PREFETCHSTATUS, &stream->prefetchStatusItf);
+    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_VOLUME, &stream->volumeItf);
 
     for (i = 0; i < NUMBER_OF_BUFFERS; ++i) {
         stream->outputBuffers[i] = PaUtil_AllocateMemory(stream->framesPerHostCallback * sizeof(SLint16));
@@ -818,12 +823,14 @@ static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostA
     stream->currentBuffer = 0;
     stream->cbFlags = 0;
     /* TODO opensl is stream blocking? do blocking callback, if not, non-blocking callback */
-    pthread_mutex_init( &stream->mtx, NULL ); //only if callback
-    pthread_cond_init( &stream->cond, NULL );
-    slResult = (*stream->prefetchStatusItf)->SetCallbackEventsMask(stream->prefetchStatusItf, SL_PREFETCHEVENT_STATUSCHANGE | SL_PREFETCHEVENT_FILLLEVELCHANGE);
-    slResult = (*stream->prefetchStatusItf)->SetFillUpdatePeriod(stream->prefetchStatusItf, 200);
-    slResult = (*stream->prefetchStatusItf)->RegisterCallback(stream->prefetchStatusItf, PrefetchStatusCallback, (void*) stream);
-    slResult = (*stream->outputBufferQueueItf)->RegisterCallback(stream->outputBufferQueueItf, OpenslOutputStreamCallback, stream);
+    
+    if ( !stream->isBlocking ) {
+        pthread_mutex_init( &stream->mtx, NULL ); //only if callback
+        slResult = (*stream->prefetchStatusItf)->SetCallbackEventsMask(stream->prefetchStatusItf, SL_PREFETCHEVENT_STATUSCHANGE | SL_PREFETCHEVENT_FILLLEVELCHANGE);
+        slResult = (*stream->prefetchStatusItf)->SetFillUpdatePeriod(stream->prefetchStatusItf, 200);
+        slResult = (*stream->prefetchStatusItf)->RegisterCallback(stream->prefetchStatusItf, PrefetchStatusCallback, (void*) stream);
+        slResult = (*stream->outputBufferQueueItf)->RegisterCallback(stream->outputBufferQueueItf, OpenslOutputStreamCallback, (void*) stream);
+    }
 }
 
 /* TODO opensl mutex thread lock this?
@@ -833,28 +840,15 @@ static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostA
         Add PaUtil beginbufferprocessing, endprocessing, setframecount, find out if the data is interleaved or not
 */
 static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData) {
-    // __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "doing callback");
     SLresult slResult;
     PaSkeletonStream *stream = (PaSkeletonStream*) userData;
     PaStreamCallbackTimeInfo timeInfo = {0,0,0};
     unsigned long framesProcessed = 0;
     struct timespec res;
-    SLBufferQueueState state;
-
-    /*if ( stream->callbackResult != paContinue && PaUtil_IsBufferProcessorOutputEmpty( &stream->bufferProcessor ) ) {
-        return;
-        }*/
 
     clock_gettime(CLOCK_MONOTONIC, &res);
     timeInfo.currentTime = (PaTime) (res.tv_sec + (res.tv_nsec / 1000000000.0)); // (PaTime) time(NULL);
     timeInfo.outputBufferDacTime = (PaTime) (stream->framesPerHostCallback / stream->streamRepresentation.streamInfo.sampleRate + timeInfo.currentTime);
-
-    PaUtil_BeginCpuLoadMeasurement(&(stream->cpuLoadMeasurer));
-
-    /* configure buffers */
-    PaUtil_BeginBufferProcessing( &stream->bufferProcessor, &timeInfo, stream->cbFlags );
-    PaUtil_SetOutputFrameCount( &stream->bufferProcessor, 0 );
-    PaUtil_SetInterleavedOutputChannels( &stream->bufferProcessor, 0, (void*) stream->outputBuffers[stream->currentBuffer], 0 );
 
     /* check if StopStream or AbortStream was called */
     if ( stream->doStop ) {
@@ -863,25 +857,34 @@ static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBuffer
         stream->callbackResult = paAbort;
     }
 
-    /* process user buffers */
-    framesProcessed = PaUtil_EndBufferProcessing( &stream->bufferProcessor, &stream->callbackResult );
+    PaUtil_BeginCpuLoadMeasurement(&(stream->cpuLoadMeasurer));
 
-    /* TODO opensl we can enqueue a buffer only when there are frames to be processed */
-    //if ( framesProcessed  > 0 && !stream->doStop && PaUtil_IsBufferProcessorOutputEmpty( &stream->bufferProcessor ) ) {
-    //        pthread_mutex_lock( &stream->mtx );
-        slResult = (*stream->outputBufferQueueItf)->Enqueue(stream->outputBufferQueueItf, (void*) stream->outputBuffers[stream->currentBuffer], framesProcessed * 2);
+    /* configure buffers */
+    PaUtil_BeginBufferProcessing( &stream->bufferProcessor, &timeInfo, stream->cbFlags );
+    PaUtil_SetOutputFrameCount( &stream->bufferProcessor, 0 );
+    PaUtil_SetInterleavedOutputChannels( &stream->bufferProcessor, 0, (void*) stream->outputBuffers[stream->currentBuffer], 0 );
+
+    /* continue processing user buffers if cbresult is pacontinue or if cbresult is  pacomplete and buffers aren't empty yet  */
+    if ( stream->callbackResult == paContinue || (stream->callbackResult == paComplete && !PaUtil_IsBufferProcessorOutputEmpty( &stream->bufferProcessor ) ) )
+        framesProcessed = PaUtil_EndBufferProcessing( &stream->bufferProcessor, &stream->callbackResult );
+
+    /* TODO opensl we can enqueue a buffer only when there are frames to be processed, this will be 0 when paComplete + empty buffers or paAbort */
+    if ( framesProcessed  > 0 ) {
+        pthread_mutex_lock( &stream->mtx );
+        slResult = (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) stream->outputBuffers[stream->currentBuffer], framesProcessed * 2 );
         stream->currentBuffer = (stream->currentBuffer + 1) % NUMBER_OF_BUFFERS;
-        //  pthread_mutex_unlock( &stream->mtx );
-        //}
+        pthread_mutex_unlock( &stream->mtx );
+    }
 
     PaUtil_EndCpuLoadMeasurement( &(stream->cpuLoadMeasurer), framesProcessed);
 }
 
 static void PrefetchStatusCallback(void *userData) {
     /* TODO if getfilllevel == 0 && underflow, panic */
-    SLuint32 prefetchStatus;
+    SLuint32 prefetchStatus = 2;
     PaSkeletonStream *stream = (PaSkeletonStream*) userData;
-    (*stream->prefetchStatusItf)->GetPrefetchStatus(stream->prefetchStatusItf, &prefetchStatus);
+    //    (*stream->prefetchStatusItf)->GetPrefetchStatus(stream->prefetchStatusItf, &prefetchStatus);
+    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "status %d", prefetchStatus);
     if ( prefetchStatus == SL_PREFETCHSTATUS_UNDERFLOW ) {
         pthread_mutex_lock( &stream->mtx );
         stream->cbFlags = paOutputUnderflow;
@@ -917,7 +920,6 @@ static PaError CloseStream( PaStream* s )
     pthread_mutex_unlock(&stream->mtx);
 
     pthread_mutex_destroy(&stream->mtx);
-    pthread_cond_destroy(&stream->cond);
 
     PaUtil_TerminateBufferProcessor( &stream->bufferProcessor );
     PaUtil_TerminateStreamRepresentation( &stream->streamRepresentation );
@@ -943,22 +945,28 @@ static PaError StartStream( PaStream *s )
        host after StartStream() is called.
     */
 
-    SLint16 zeroBuffer[stream->framesPerHostCallback];
-    memset(zeroBuffer, NULL, stream->framesPerHostCallback * 2);
+    (*stream->volumeItf)->SetVolumeLevel( stream->volumeItf, -300 );
+
     stream->isStopped = SL_BOOLEAN_FALSE;
     stream->isActive = SL_BOOLEAN_TRUE;
     stream->doStop = SL_BOOLEAN_FALSE;
     stream->doAbort = SL_BOOLEAN_FALSE;
-    stream->callbackResult = paContinue;
-    slResult = (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_PLAYING);
 
+
+    if ( !stream->isBlocking ) {
+        stream->callbackResult = paContinue;
+        SLint16 zeroBuffer[stream->framesPerHostCallback];
+        memset(zeroBuffer, NULL, stream->framesPerHostCallback * 2);
+        for ( i = 0; i < NUMBER_OF_BUFFERS; ++i )
+            slResult = (*stream->outputBufferQueueItf)->Enqueue(stream->outputBufferQueueItf, (void*) zeroBuffer, stream->framesPerHostCallback * 2);
+    }
+
+    slResult = (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_PLAYING);
     if (slResult != SL_RESULT_SUCCESS) {
         /* TODO opensles return error */
         __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "couldn't set playstate to playing");
         result = paUnanticipatedHostError;
     }
-
-    slResult = (*stream->outputBufferQueueItf)->Enqueue(stream->outputBufferQueueItf, (void*) zeroBuffer, stream->framesPerHostCallback * 2);
 
     return result;
 }
@@ -968,41 +976,42 @@ static PaError StopStream( PaStream *s )
     assert(s);
     PaError result = paNoError;
     PaSkeletonStream *stream = (PaSkeletonStream*)s;
-    SLBufferQueueState state;
+    SLAndroidSimpleBufferQueueState state;
 
     pthread_mutex_lock( &stream->mtx );
     stream->doStop = SL_BOOLEAN_TRUE;
-    //    (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_STOPPED);
     pthread_mutex_unlock( &stream->mtx );
 
     do {
         (*stream->outputBufferQueueItf)->GetState(stream->outputBufferQueueItf, &state);
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "%d buffers remaining", state.count);
-        Pa_Sleep(100);
-    } while ( state.count > 0 ); /* while the buffer has got stuff in it, wait */
+    } while ( state.count > 0 ); /* while the queue has got stuff in it, wait */
 
-
+    
     pthread_mutex_lock( &stream->mtx );
+    (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_STOPPED);
     stream->isActive = SL_BOOLEAN_FALSE;
+    stream->isStopped = SL_BOOLEAN_TRUE;
     pthread_mutex_unlock( &stream->mtx );
 
     if( stream->streamRepresentation.streamFinishedCallback != NULL )
-        stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
+     stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
 
     return result;
 }
-
 
 static PaError AbortStream( PaStream *s )
 {
     PaError result = paNoError;
     PaSkeletonStream *stream = (PaSkeletonStream*)s;
 
-    /* we simply stop and do not wait for the buffers to be empty */
+    pthread_mutex_lock( &stream->mtx );
     (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_STOPPED);
+    stream->isActive = SL_BOOLEAN_FALSE;
+    stream->isStopped = SL_BOOLEAN_TRUE;
+    pthread_mutex_unlock( &stream->mtx );
+    
     if( stream->streamRepresentation.streamFinishedCallback != NULL )
         stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
-
     return result;
 }
 
@@ -1076,17 +1085,20 @@ static PaError WriteStream( PaStream* s,
                             unsigned long frames )
 {
     PaSkeletonStream *stream = (PaSkeletonStream*)s;
-
-    /* suppress unused variable warnings */
-    (void) buffer;
-    (void) frames;
-    (void) stream;
-    
-    /* IMPLEMENT ME, see portaudio.h for required behavior*/
+    SLAndroidSimpleBufferQueueState state;
+    int index = 0;
+    char* p = (char*) buffer;
+    while ( frames > 0 && GetStreamWriteAvailable( s ) > 0 ) { // while there are frames
+        unsigned long framesToWrite = frames; // PA_MIN_(stream->framesPerHostCallback, frames);
+        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, " p %d, frames %d, frames %d", p, framesToWrite, frames);
+        (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) p, framesToWrite * 2 );
+        frames -= framesToWrite;
+        p += framesToWrite;
+            
+    }
 
     return paNoError;
 }
-
 
 static signed long GetStreamReadAvailable( PaStream* s )
 {
@@ -1100,17 +1112,15 @@ static signed long GetStreamReadAvailable( PaStream* s )
     return 0;
 }
 
-
+/* TODO opensles this should be framesperhostcallback * NUMBER_OF_BUFFERS - framesperhostcallback * slbufferqueuestatestate.count */
 static signed long GetStreamWriteAvailable( PaStream* s )
 {
     PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    SLAndroidSimpleBufferQueueState state;
 
-    /* suppress unused variable warnings */
-    (void) stream;
-    
-    /* IMPLEMENT ME, see portaudio.h for required behavior*/
+    (*stream->outputBufferQueueItf)->GetState(stream->outputBufferQueueItf, &state);
 
-    return 0;
+    return stream->framesPerHostCallback * ( NUMBER_OF_BUFFERS - state.count );
 }
 
 
