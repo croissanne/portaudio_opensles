@@ -56,6 +56,13 @@
 #include <pthread.h>
 #include <errno.h> /* ETIMEDOUT */
 #include <assert.h>
+#include <math.h> /* floor */
+#include <time.h>
+
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
+/* TODO opensles android logging */
+#include <android/log.h>
 
 #include "pa_util.h"
 #include "pa_allocation.h"
@@ -63,18 +70,24 @@
 #include "pa_stream.h"
 #include "pa_cpuload.h"
 #include "pa_process.h"
-
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
-/* TODO opensles android logging */
-#include <android/log.h>
-#include <time.h>
+#include "pa_unix_util.h"
+#include "pa_debugprint.h"
 
 #define APPNAME "PORTAUDIO_OPENSL"
 #define NUMBER_OF_ENGINE_OPTIONS 2
-#define NUMBER_OF_BUFFERS 2
+#define NUMBER_OF_BUFFERS 5
 
-#define PA_MIN_( a, b ) ( ((a)<(b)) ? (a) : (b) )
+#define ENSURE(expr, errorText) \
+    do { \
+        PaError err; \
+        if( UNLIKELY( (err = (expr)) < paNoError ) ) \
+        { \
+            PaUtil_DebugPrint(( "Expression '" #expr "' failed in '" __FILE__ "', line: " STRINGIZE( __LINE__ ) "\n" )); \
+            PaUtil_SetLastHostErrorInfo( paInDevelopment, err, errorText ); \
+            result = err; \
+            goto error; \
+        } \
+    } while (0);
 
 /* prototypes for functions declared in this file */
 #ifdef __cplusplus
@@ -116,10 +129,7 @@ static PaError WriteStream( PaStream* stream, const void *buffer, unsigned long 
 static signed long GetStreamReadAvailable( PaStream* stream );
 static signed long GetStreamWriteAvailable( PaStream* stream );
 
-/* IMPLEMENT ME: a macro like the following one should be used for reporting
- host errors */
-#define PA_SKELETON_SET_LAST_HOST_ERROR( errorCode, errorText ) \
-    PaUtil_SetLastHostErrorInfo( paInDevelopment, errorCode, errorText )
+
 
 /* PaSkeletonHostApiRepresentation - host api datastructure specific to this implementation */
 
@@ -131,105 +141,80 @@ typedef struct
 
     PaUtilAllocationGroup *allocations;
 
-    /* implementation specific data goes here */
     SLObjectItf sl;
-    SLEngineItf slEngineItf; /* TODO opensl we have engineoptions, but maybe we just have those when creating the engine? */
+    SLEngineItf slEngineItf;
 
-    /* TODO opensl moved these to stream struct*/
-    //SLObjectItf audioPlayer;
-    //SLPlayItf playerItf;
-
-    /*    SLboolean required[MAX_NUMBER_INTERFACES];
-          SLInterfaceID iidArray[MAX_NUMBER_INTERFACES]; */
 }
-PaOpenslHostApiRepresentation;  /* IMPLEMENT ME: rename this */
+PaOpenslHostApiRepresentation;
 
-/* TODO opensl this returnOnFail isn't very pretty I feel, maybe find a better way to handle errors, at least they're in one place now 
-static PaError checkSLResult(SLresult result, PaError returnOnFail, const char* msg) {
-    if (result == SL_RESULT_SUCCESS) {
-        return paNoError;
-    } else {
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "CheckSlResult failed with result %d, message:  %s", result, msg);
-        return returnOnFail;
-    }
-}
-*/
-
-/* TODO static? also check to see if the inheritedhostapirep is initialized?
-   Actually check SL_OBJECT_STATE, if it's realized, simply return, unrealized then create, suspend => destroy + create? */
-PaError Opensles_InitializeEngine(PaOpenslHostApiRepresentation *openslHostApi) {
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "initializing opensl engine");
-    SLresult res;
-    SLEngineOption engineOption[] = {
-        (SLuint32) SL_ENGINEOPTION_THREADSAFE,
-        (SLuint32) SL_BOOLEAN_TRUE
-    };
-    res = slCreateEngine(&(openslHostApi->sl), 1, engineOption, 0, NULL, NULL);
-    //checkSLResult(res, paUnanticipatedHostError, "");
-    res = (*openslHostApi->sl)->Realize(openslHostApi->sl, SL_BOOLEAN_FALSE);
-    //checkSLResult(res, paUnanticipatedHostError, "");
-    res = (*openslHostApi->sl)->GetInterface(openslHostApi->sl, SL_IID_ENGINE, (void *) &(openslHostApi->slEngineItf));
-    //return checkSLResult(res, paUnanticipatedHostError, "Getting interface in ");
-    return paNoError;
+PaError Opensles_InitializeEngine(PaOpenslHostApiRepresentation *openslHostApi)
+{
+    SLresult slResult;
+    PaError result = paNoError;
+    const SLEngineOption engineOption[] = {{ SL_ENGINEOPTION_THREADSAFE, SL_BOOLEAN_TRUE }};
+    slResult = slCreateEngine( &openslHostApi->sl , 1, engineOption, 0, NULL, NULL);
+    result = slResult == SL_RESULT_SUCCESS ? paNoError : paUnanticipatedHostError;
+    slResult = (*openslHostApi->sl)->Realize( openslHostApi->sl, SL_BOOLEAN_FALSE );
+    result = slResult == SL_RESULT_SUCCESS ? paNoError : paUnanticipatedHostError;
+    slResult = (*openslHostApi->sl)->GetInterface( openslHostApi->sl, SL_IID_ENGINE, (void *) &openslHostApi->slEngineItf );
+    result = slResult == SL_RESULT_SUCCESS ? paNoError : paUnanticipatedHostError;
+    return result;
 }
 
 /* TODO this expects samplerate to be in milliHertz, the way openSL does it */
-PaError IsOutputSampleRateSupported(PaOpenslHostApiRepresentation *openslHostApi, double sampleRate) {
-    /* TODO opensl create dummy audioSnk and audioSrc and outputMix aned audioPlayer */
+static PaError IsOutputSampleRateSupported(PaOpenslHostApiRepresentation *openslHostApi, double sampleRate)
+{
     SLresult slResult;
     SLObjectItf audioPlayer;
     SLObjectItf outputMixObject;
-    slResult = (*openslHostApi->slEngineItf)->CreateOutputMix(openslHostApi->slEngineItf, &outputMixObject, 0, NULL, NULL);
-    slResult = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
-    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
-    SLDataSink audioSnk = {&loc_outmix, NULL};
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+
+    (*openslHostApi->slEngineItf)->CreateOutputMix( openslHostApi->slEngineItf, &outputMixObject, 0, NULL, NULL );
+    (*outputMixObject)->Realize( outputMixObject, SL_BOOLEAN_FALSE );
+
+    SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, outputMixObject };
+    SLDataSink audioSnk = { &loc_outmix, NULL };
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
     SLDataFormat_PCM  format_pcm = { SL_DATAFORMAT_PCM, 1, sampleRate,
                                      SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
                                      SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
-    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+    SLDataSource audioSrc = { &loc_bufq, &format_pcm };
 
-    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &audioPlayer, &audioSrc, &audioSnk, 0, NULL, NULL);
-    if (slResult == SL_RESULT_SUCCESS) {
-        return paNoError;
-    } else {
-        return paInvalidSampleRate;
-    }
+    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer( openslHostApi->slEngineItf, &audioPlayer, &audioSrc, &audioSnk, 0, NULL, NULL );
+    (*audioPlayer)->Destroy( audioPlayer );
+    (*outputMixObject)->Destroy( outputMixObject );
+    return slResult == SL_RESULT_SUCCESS ? paNoError : paInvalidSampleRate;
 }
 
-PaError IsOutputChannelCountSupported(PaOpenslHostApiRepresentation *openslHostApi, SLuint32 numOfChannels) {
-    if (numOfChannels > 2 || numOfChannels == 0) {
+static PaError IsOutputChannelCountSupported(PaOpenslHostApiRepresentation *openslHostApi, SLuint32 numOfChannels)
+{
+    if ( numOfChannels > 2 || numOfChannels == 0 )
         return paInvalidChannelCount;
-    }
+
     /* TODO opensl create dummy audioSnk and audioSrc and outputMix and audioPlayer */
     SLresult slResult;
     SLObjectItf audioPlayer;
     SLObjectItf outputMixObject;
-    slResult = (*openslHostApi->slEngineItf)->CreateOutputMix(openslHostApi->slEngineItf, &outputMixObject, 0, NULL, NULL);
-    slResult = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
-    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
-    SLDataSink audioSnk = {&loc_outmix, NULL};
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
-    SLuint32 channelMasks[] = { SL_SPEAKER_FRONT_CENTER, SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT };
+    const SLuint32 channelMasks[] = { SL_SPEAKER_FRONT_CENTER, SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT };
+
+    (*openslHostApi->slEngineItf)->CreateOutputMix( openslHostApi->slEngineItf, &outputMixObject, 0, NULL, NULL );
+    (*outputMixObject)->Realize( outputMixObject, SL_BOOLEAN_FALSE );
+
+    SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, outputMixObject };
+    SLDataSink audioSnk = { &loc_outmix, NULL };
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
     SLDataFormat_PCM  format_pcm = { SL_DATAFORMAT_PCM, numOfChannels, SL_SAMPLINGRATE_16,
                                      SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
                                      channelMasks[numOfChannels - 1], SL_BYTEORDER_LITTLEENDIAN };
-    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
-    /* TODO opensl position 1 is for 1 outputchannel, position 2 is for stereo, etc...
-            change approach t osampling rates here, test a few to have one that definitely works
-    */
+    SLDataSource audioSrc = { &loc_bufq, &format_pcm };
 
-    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &audioPlayer, &audioSrc, &audioSnk, 0, NULL, NULL);
-    if (slResult == SL_RESULT_SUCCESS) {
-        return paNoError;
-    } else {
-        return paInvalidChannelCount;
-    }
+    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer( openslHostApi->slEngineItf, &audioPlayer, &audioSrc, &audioSnk, 0, NULL, NULL );
+    (*audioPlayer)->Destroy( audioPlayer );
+    (*outputMixObject)->Destroy( outputMixObject );
+    return slResult == SL_RESULT_SUCCESS ? paNoError : paInvalidSampleRate;
 }
 
 PaError PaOpensles_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex hostApiIndex )
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "initializing portaudio opensl");
     PaError result = paNoError;
     int i, deviceCount;
     PaOpenslHostApiRepresentation *openslHostApi;
@@ -252,15 +237,12 @@ PaError PaOpensles_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
     *hostApi = &openslHostApi->inheritedHostApiRep;
     (*hostApi)->info.structVersion = 1;
     (*hostApi)->info.type = paInDevelopment;            /* IMPLEMENT ME: change to correct type id */
-    (*hostApi)->info.name = "opensl es implementation";  /* IMPLEMENT ME: change to correct name */
-
+    (*hostApi)->info.name = "Opensl ES android";  /* IMPLEMENT ME: change to correct name */
     (*hostApi)->info.defaultOutputDevice = 0; /* IMPLEMENT ME */
     (*hostApi)->info.defaultInputDevice = paNoDevice;  /* IMPLEMENT ME */
-
-    /* TODO opensles android selects it's own output device */
     (*hostApi)->info.deviceCount = 1;
     deviceCount = 1;
-    
+
     if( deviceCount > 0 )
     {
         (*hostApi)->deviceInfos = (PaDeviceInfo**)PaUtil_GroupAllocateMemory(
@@ -280,42 +262,44 @@ PaError PaOpensles_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
             goto error;
         }
 
+        ENSURE( Opensles_InitializeEngine(openslHostApi), "Initializing engine failed" );
+
         for( i=0; i < deviceCount; ++i )
         {
             PaDeviceInfo *deviceInfo = &deviceInfoArray[i];
             deviceInfo->structVersion = 2;
             deviceInfo->hostApi = hostApiIndex;
-            /* TODO opensl android selects it's own device, so we'll just expose 2 default devices */
+            /* TODO opensl android selects it's own device, so we'll just expose a default device */
             deviceInfo->name = "default";
 
-            Opensles_InitializeEngine(openslHostApi);
-
-            SLuint32 outputChannels[] = { 2, 1 };
-            SLuint32 numOutputChannels = 2;
+            const SLuint32 outputChannels[] = { 2, 1 };
+            const SLuint32 numOutputChannels = 2;
             deviceInfo->maxOutputChannels = 0;
             deviceInfo->maxInputChannels = 0; /* TODO opensl currently only doing outputdevice */
-            for (i = 0; i < numOutputChannels; ++i) {
-                if (IsOutputChannelCountSupported(openslHostApi, outputChannels[i]) == paNoError) {
+            for (i = 0; i < numOutputChannels; ++i)
+            {
+                if (IsOutputChannelCountSupported(openslHostApi, outputChannels[i]) == paNoError)
+                {
                     deviceInfo->maxOutputChannels = outputChannels[i];
                     break;
                 }
             }
 
             /* TODO opensl again creating an audioplayer, this time to see which sampling rates are supported in order of preference */
-            SLuint32 sampleRates[] = {SL_SAMPLINGRATE_44_1, SL_SAMPLINGRATE_48, SL_SAMPLINGRATE_32, SL_SAMPLINGRATE_24};
-            SLuint32 numberOfSampleRates = 4;
+            const SLuint32 sampleRates[] = { SL_SAMPLINGRATE_44_1, SL_SAMPLINGRATE_48, SL_SAMPLINGRATE_32, SL_SAMPLINGRATE_24 };
+            const SLuint32 numberOfSampleRates = 4;
             deviceInfo->defaultSampleRate = 0;
-            for (i = 0; i < numberOfSampleRates; ++i) {
-                if (IsOutputSampleRateSupported(openslHostApi, sampleRates[i]) == paNoError) {
+            for ( i = 0; i < numberOfSampleRates; ++i ) 
+            {
+                if ( IsOutputSampleRateSupported(openslHostApi, sampleRates[i]) == paNoError )
+                {
                     /* TODO opensl defines sampling rates in milliHertz, so we divide by 1000*/
                     deviceInfo->defaultSampleRate = sampleRates[i] / 1000;
                     break;
                 }
             }
-            if (deviceInfo->defaultSampleRate == 0) {
-                __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "no supported samplerate found during initialization");
+            if ( deviceInfo->defaultSampleRate == 0 )
                 goto error;
-            }
 
             /* TODO opensl arbitrary values, need to caluclate these like alsa hostapi does? 
                     also opensl goes through the android HAL and this can be dependent on device*/
@@ -374,10 +358,10 @@ static void Terminate( struct PaUtilHostApiRepresentation *hostApi )
     */
     /* TODO opensl clean up the object add player/recorder to clean if stream is open?
        Is the null check necessary, since we don't really initialize sl to a default null value */
-    if ( openslHostApi->sl ) {
+
+    if ( openslHostApi->sl )
+    {
         (*openslHostApi->sl)->Destroy(openslHostApi->sl);
-        openslHostApi->sl = NULL;
-        openslHostApi->slEngineItf = NULL;
     }
 
     if( openslHostApi->allocations )
@@ -395,11 +379,6 @@ static PaError IsFormatSupported( struct PaUtilHostApiRepresentation *hostApi,
                                   const PaStreamParameters *outputParameters,
                                   double sampleRate )
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "querying isformatsupported");
-    if ( inputParameters )
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "inputparameters are present");
-    if ( outputParameters )
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "outputparameters are present");
     int inputChannelCount, outputChannelCount;
     PaSampleFormat inputSampleFormat, outputSampleFormat;
     PaOpenslHostApiRepresentation *openslHostApi = (PaOpenslHostApiRepresentation*) hostApi;
@@ -443,10 +422,8 @@ static PaError IsFormatSupported( struct PaUtilHostApiRepresentation *hostApi,
         /* all standard sample formats are supported by the buffer adapter,
             this implementation doesn't support any custom sample formats */
 
-        if( outputSampleFormat & paCustomFormat ) {
-            __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "custom sampleformat not supported");
+        if( outputSampleFormat & paCustomFormat )
             return paSampleFormatNotSupported;
-        }
 
         /* unless alternate device specification is supported, reject the use of
             paUseHostApiSpecificDeviceSpecification */
@@ -455,57 +432,22 @@ static PaError IsFormatSupported( struct PaUtilHostApiRepresentation *hostApi,
 
 
         /* check that output device can support outputChannelCount */
-        if( outputChannelCount > hostApi->deviceInfos[ outputParameters->device ]->maxOutputChannels ) {
-            __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "The device doesn't support %d output channels", outputChannelCount);
+        if( outputChannelCount > hostApi->deviceInfos[ outputParameters->device ]->maxOutputChannels )
             return paInvalidChannelCount;
-        }
 
         /* validate outputStreamInfo */
-        if( outputParameters->hostApiSpecificStreamInfo ) {
-            __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "remove hostapispecificstreaminfo");
-            return paIncompatibleHostApiSpecificStreamInfo; /* this implementation doesn't use custom stream info */
-        }
+        if( outputParameters->hostApiSpecificStreamInfo ) 
+            return paIncompatibleHostApiSpecificStreamInfo;
     }
     else
     {
         outputChannelCount = 0;
     }
-    
-    /*
-        IMPLEMENT ME:
 
-            - if a full duplex stream is requested, check that the combination
-                of input and output parameters is supported if necessary
-
-            - check that the device supports sampleRate
-
-        Because the buffer adapter handles conversion between all standard
-        sample formats, the following checks are only required if paCustomFormat
-        is implemented, or under some other unusual conditions.
-
-            - check that input device can support inputSampleFormat, or that
-                we have the capability to convert from inputSampleFormat to
-                a native format
-
-            - check that output device can support outputSampleFormat, or that
-                we have the capability to convert from outputSampleFormat to
-                a native format
-    */
-    /* TODO opensl see if casting of samplerate is good (it's double to uint32), maybe we should make a helper function for this) we also need to check if the sampleFormat is supported by opensl 
-     We The only two sampleformats supported are uint8 or int16, so we need a helper function or something to map those as well
-    For samplerate chekc we need to multiple by 1000 first*/ 
-
-    /* TODO opensl only supports uint8 and int16, check here or below? 
-           alsa has a Pa2AlsaSampleFormat, we could use that too. */
-
-    /* TODO opensles do we need to do this? initialize should have done it  Opensles_InitializeEngine(openslHostApi); */
-
-    if (IsOutputSampleRateSupported(openslHostApi, sampleRate * 1000) != paNoError) {
+    if ( IsOutputSampleRateSupported( openslHostApi, sampleRate * 1000 ) != paNoError )
+    {
         return paInvalidSampleRate;
     }
-
-    /* suppress unused variable warnings */
-    (void) sampleRate;
 
     return paFormatIsSupported;
 }
@@ -533,9 +475,9 @@ static PaError IsFormatSupported( struct PaUtilHostApiRepresentation *hostApi,
 
 
 
-/* PaSkeletonStream - a stream data structure specifically for this implementation */
+/* OpenslesStream - a stream data structure specifically for this implementation */
 
-typedef struct PaSkeletonStream
+typedef struct OpenslesStream
 { /* IMPLEMENT ME: rename this */
     PaUtilStreamRepresentation streamRepresentation;
     PaUtilCpuLoadMeasurer cpuLoadMeasurer;
@@ -555,46 +497,44 @@ typedef struct PaSkeletonStream
     SLboolean doStop;
     SLboolean doAbort;
     pthread_mutex_t mtx;
+    pthread_cond_t cond;
     int callbackResult;
 
     PaStreamCallbackFlags cbFlags;
     void   *outputBuffers[NUMBER_OF_BUFFERS];
     int currentBuffer;
     unsigned long framesPerHostCallback;
+    unsigned bytesPerFrame;
 }
-PaSkeletonStream;
+OpenslesStream;
+
+static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, OpenslesStream *stream, double sampleRate);
+static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData);
+static void PrefetchStatusCallback(SLPrefetchStatusItf prefetchStatusItf, void *userData, SLuint32 event);
 
 /* see pa_hostapi.h for a list of validity guarantees made about OpenStream parameters */
-/* TODO remove 
-static PaError WaitCondition( PaSkeletonStream *stream )
+static PaError WaitCondition( OpenslesStream *stream )
 {
     PaError result = paNoError;
     int err = 0;
     PaTime pt = PaUtil_GetTime();
     struct timespec ts;
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "waiting");
-    ts.tv_sec = (time_t) floor( pt + 10 * 60  10 minutes  );
+    ts.tv_sec = (time_t) floor( pt + 10 * 60 /* 10 minutes */);
     ts.tv_nsec = (long) ((pt - floor( pt )) * 1000000000);
-     XXX: Best enclose in loop, in case of spurious wakeups? 
     err = pthread_cond_timedwait( &stream->cond, &stream->mtx, &ts );
-    Make sure we didn't time out 
-    if ( err == ETIMEDOUT ) {
+    if ( err == ETIMEDOUT )
+    {
         result = paTimedOut;
         goto error;
     }
-    if ( err ) {
+    if ( err )
+    {
         result =  paInternalError;
         goto error;
     }
-    return result;
 error:
     return result;
 }
-*/
-
-static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, PaSkeletonStream *stream, int channelCount, double sampleRate);
-static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData);
-static void PrefetchStatusCallback(void *userData);
 
 static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
                            PaStream** s,
@@ -608,7 +548,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 {
     PaError result = paNoError;
     PaOpenslHostApiRepresentation *openslHostApi = (PaOpenslHostApiRepresentation*)hostApi;
-    PaSkeletonStream *stream = 0;
+    OpenslesStream *stream = 0;
     unsigned long framesPerHostBuffer; /* these may not be equivalent for all implementations */
     int inputChannelCount, outputChannelCount;
     PaSampleFormat inputSampleFormat, outputSampleFormat;
@@ -635,7 +575,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
         /* IMPLEMENT ME - establish which  host formats are available */
         hostInputSampleFormat =
-            PaUtil_SelectClosestAvailableFormat( paInt16 /* native formats */, inputSampleFormat );
+            PaUtil_SelectClosestAvailableFormat( paInt16, inputSampleFormat );
     }
     else
     {
@@ -702,23 +642,16 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     if( (streamFlags & paPlatformSpecificFlags) != 0 )
         return paInvalidFlag; /* unexpected platform specific flag */
 
-
-    /* TODO opensl if unspecified, take the default low latency, wich is 256, and 128 user buffer? , though this needs to be based on latency preference
-       framesperhostbuffer should be *2 frames per buffer
-       if a latency of 100 ms is asked the equation is
-       latency * samplerate = buffer size
-       so 0.1 * 44100 = 4410
-
-    */
-    if (framesPerBuffer == paFramesPerBufferUnspecified) {
-        if ( outputChannelCount > 0 ) {
-            framesPerHostBuffer = (unsigned long) ( outputParameters->suggestedLatency * sampleRate);
-        }
-    } else {
+    if (framesPerBuffer == paFramesPerBufferUnspecified)
+    {
+        framesPerHostBuffer = (unsigned long) ( outputParameters->suggestedLatency * sampleRate);
+    }
+    else
+    {
         /* TODO opensles if user buffer is specified, it's probably blocking, make them the same amount */
         framesPerHostBuffer = framesPerBuffer;
     }
-    stream = (PaSkeletonStream*)PaUtil_AllocateMemory( sizeof(PaSkeletonStream) );
+    stream = (OpenslesStream*)PaUtil_AllocateMemory( sizeof(OpenslesStream) );
 
     if( !stream )
     {
@@ -756,81 +689,109 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     if( result != paNoError )
         goto error;
 
-
-    /*
-        IMPLEMENT ME: initialise the following fields with estimated or actual
-        values.
-    */
     if ( inputChannelCount > 0 )
         stream->streamRepresentation.streamInfo.inputLatency =
-            ((PaTime)PaUtil_GetBufferProcessorInputLatencyFrames(&stream->bufferProcessor) + framesPerHostBuffer) / sampleRate; /* inputLatency is specified in _seconds_ */
+            ((PaTime)PaUtil_GetBufferProcessorInputLatencyFrames(&stream->bufferProcessor) + framesPerHostBuffer) / sampleRate;
     if ( outputChannelCount > 0 )
         stream->streamRepresentation.streamInfo.outputLatency =
-            ((PaTime)PaUtil_GetBufferProcessorOutputLatencyFrames(&stream->bufferProcessor) + framesPerHostBuffer) / sampleRate; /* outputLatency is specified in _seconds_ */
+            ((PaTime)PaUtil_GetBufferProcessorOutputLatencyFrames(&stream->bufferProcessor) + framesPerHostBuffer) / sampleRate;
+
     stream->streamRepresentation.streamInfo.sampleRate = sampleRate;
-
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "outputlatency is %f ", stream->streamRepresentation.streamInfo.outputLatency);
-    /*
-        IMPLEMENT ME:
-            - additional stream setup + opening
-    */
-
     stream->framesPerHostCallback = framesPerHostBuffer;
     stream->isBlocking = streamCallback ? SL_BOOLEAN_FALSE : SL_BOOLEAN_TRUE;
-    InitializeOutputStream(openslHostApi, stream, outputChannelCount, sampleRate);
+
+    ENSURE( InitializeOutputStream( openslHostApi, stream, sampleRate ), "Initializing outputstream failed" );
 
     *s = (PaStream*)stream;
     
     stream->isStopped = SL_BOOLEAN_TRUE;
     stream->isActive = SL_BOOLEAN_FALSE;
-
+    
     return result;
-
+    
 error:
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "openstream went to error");
     if( stream )
         PaUtil_FreeMemory( stream );
-
     return result;
 }
 
 /* TODO opensl ok so android only supports outputMix as an audiosink, not iodevice, fml */
-static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, PaSkeletonStream *stream, int channelCount, double sampleRate) {
+static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostApi, OpenslesStream *stream, double sampleRate)
+{
+    PaError result = paNoError;
     SLresult slResult;
     int i;
-    SLInterfaceID ids[3] = { SL_IID_BUFFERQUEUE, SL_IID_PREFETCHSTATUS, SL_IID_VOLUME }; // , SL_IID_ANDROIDCONFIGURATION };
-    SLboolean req[3] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE }; // , SL_BOOLEAN_TRUE };
-    SLuint32 channelMasks[] = { SL_SPEAKER_FRONT_CENTER, SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT };
+    const SLuint32 channelMasks[] = { SL_SPEAKER_FRONT_CENTER, SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT };
     SLDataLocator_AndroidSimpleBufferQueue outputSourceBufferQueue = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUMBER_OF_BUFFERS };
-    SLDataFormat_PCM  format_pcm = { SL_DATAFORMAT_PCM, channelCount, sampleRate * 1000.0, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, channelMasks[channelCount-1], SL_BYTEORDER_LITTLEENDIAN };
+    SLDataFormat_PCM  format_pcm = { SL_DATAFORMAT_PCM, stream->bufferProcessor.outputChannelCount, sampleRate * 1000.0, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, channelMasks[stream->bufferProcessor.outputChannelCount - 1], SL_BYTEORDER_LITTLEENDIAN };
     SLDataSource audioSrc = { &outputSourceBufferQueue, &format_pcm };
-
-    slResult = (*openslHostApi->slEngineItf)->CreateOutputMix(openslHostApi->slEngineItf, &(stream->outputMixObject), 0, NULL, NULL);
-    slResult = (*stream->outputMixObject)->Realize(stream->outputMixObject, SL_BOOLEAN_FALSE);
+    
+    (*openslHostApi->slEngineItf)->CreateOutputMix( openslHostApi->slEngineItf, &(stream->outputMixObject), 0, NULL, NULL );
+    (*stream->outputMixObject)->Realize( stream->outputMixObject, SL_BOOLEAN_FALSE );
     SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, stream->outputMixObject };
     SLDataSink audioSnk = { &loc_outmix, &format_pcm };
+    
+    if ( !stream->isBlocking )
+    {
+        const SLInterfaceID ids[] = { SL_IID_BUFFERQUEUE, SL_IID_PREFETCHSTATUS, SL_IID_VOLUME }; // , SL_IID_ANDROIDCONFIGURATION }
+        const SLboolean req[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE }; // , SL_BOOLEAN_TRUE };
+        const unsigned interfaceCount = 3;
+        slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &stream->audioPlayer, &audioSrc, &audioSnk, interfaceCount, ids, req);
+    }
+    else
+    {
+        const SLInterfaceID ids[] = { SL_IID_BUFFERQUEUE, SL_IID_VOLUME }; // , SL_IID_ANDROIDCONFIGURATION }        
+        const SLboolean req[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE }; // , SL_BOOLEAN_TRUE };
+        const unsigned interfaceCount = 2;
+        slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer( openslHostApi->slEngineItf, &stream->audioPlayer, &audioSrc, &audioSnk, interfaceCount, ids, req );
+    }
+    if ( slResult != SL_RESULT_SUCCESS )
+    {
+        result = paUnanticipatedHostError;
+        goto error;
+    }
+    slResult = (*stream->audioPlayer)->Realize( stream->audioPlayer, SL_BOOLEAN_FALSE );
+    if ( slResult != SL_RESULT_SUCCESS )
+    {
+        result = paUnanticipatedHostError;
+        goto error;
+    }
 
-    slResult = (*openslHostApi->slEngineItf)->CreateAudioPlayer(openslHostApi->slEngineItf, &stream->audioPlayer, &audioSrc, &audioSnk, 3, ids, req);
-    slResult = (*stream->audioPlayer)->Realize(stream->audioPlayer, SL_BOOLEAN_FALSE);
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PLAY, &stream->playerItf);
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_BUFFERQUEUE, &stream->outputBufferQueueItf);
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_PREFETCHSTATUS, &stream->prefetchStatusItf);
-    slResult = (*stream->audioPlayer)->GetInterface(stream->audioPlayer, SL_IID_VOLUME, &stream->volumeItf);
+    (*stream->audioPlayer)->GetInterface( stream->audioPlayer, SL_IID_PLAY, &stream->playerItf );
+    (*stream->audioPlayer)->GetInterface( stream->audioPlayer, SL_IID_BUFFERQUEUE, &stream->outputBufferQueueItf );
+    (*stream->audioPlayer)->GetInterface( stream->audioPlayer, SL_IID_VOLUME, &stream->volumeItf );
 
-    for (i = 0; i < NUMBER_OF_BUFFERS; ++i) {
-        stream->outputBuffers[i] = PaUtil_AllocateMemory(stream->framesPerHostCallback * sizeof(SLint16));
+    stream->bytesPerFrame = sizeof(SLint16);
+    for (i = 0; i < NUMBER_OF_BUFFERS; ++i)
+    {
+        stream->outputBuffers[i] = (void*) PaUtil_AllocateMemory( stream->framesPerHostCallback * stream->bytesPerFrame );
+        if ( !stream->outputBuffers[i] )
+        {
+            result = paInsufficientMemory;
+            goto error;
+        }
     }
     stream->currentBuffer = 0;
     stream->cbFlags = 0;
+
+    pthread_mutex_init( &stream->mtx, NULL );
+    pthread_cond_init( &stream->cond, NULL );
+
     /* TODO opensl is stream blocking? do blocking callback, if not, non-blocking callback */
-    
-    if ( !stream->isBlocking ) {
-        pthread_mutex_init( &stream->mtx, NULL ); //only if callback
-        slResult = (*stream->prefetchStatusItf)->SetCallbackEventsMask(stream->prefetchStatusItf, SL_PREFETCHEVENT_STATUSCHANGE | SL_PREFETCHEVENT_FILLLEVELCHANGE);
-        slResult = (*stream->prefetchStatusItf)->SetFillUpdatePeriod(stream->prefetchStatusItf, 200);
-        slResult = (*stream->prefetchStatusItf)->RegisterCallback(stream->prefetchStatusItf, PrefetchStatusCallback, (void*) stream);
-        slResult = (*stream->outputBufferQueueItf)->RegisterCallback(stream->outputBufferQueueItf, OpenslOutputStreamCallback, (void*) stream);
+    if ( !stream->isBlocking )
+    {
+        (*stream->audioPlayer)->GetInterface( stream->audioPlayer, SL_IID_PREFETCHSTATUS, &stream->prefetchStatusItf );
+        (*stream->prefetchStatusItf)->SetCallbackEventsMask( stream->prefetchStatusItf, SL_PREFETCHEVENT_STATUSCHANGE | SL_PREFETCHEVENT_FILLLEVELCHANGE );
+        (*stream->prefetchStatusItf)->SetFillUpdatePeriod( stream->prefetchStatusItf, 200 );
+        (*stream->prefetchStatusItf)->RegisterCallback( stream->prefetchStatusItf, PrefetchStatusCallback, (void*) stream );
+        (*stream->outputBufferQueueItf)->RegisterCallback( stream->outputBufferQueueItf, OpenslOutputStreamCallback, (void*) stream );
     }
+    /*else
+    {
+        (*stream->outputBufferQueueItf)->RegisterCallback( stream->outputBufferQueueItf, NotifyBufferFreeCallback, (void*) stream );
+        }*/
+error:
+    return result;
 }
 
 /* TODO opensl mutex thread lock this?
@@ -839,60 +800,55 @@ static PaError InitializeOutputStream(PaOpenslHostApiRepresentation *openslHostA
         
         Add PaUtil beginbufferprocessing, endprocessing, setframecount, find out if the data is interleaved or not
 */
-static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData) {
-    SLresult slResult;
-    PaSkeletonStream *stream = (PaSkeletonStream*) userData;
+static void OpenslOutputStreamCallback(SLAndroidSimpleBufferQueueItf outpuBufferQueueItf, void *userData)
+{
+    OpenslesStream *stream = (OpenslesStream*) userData;
     PaStreamCallbackTimeInfo timeInfo = {0,0,0};
     unsigned long framesProcessed = 0;
-    struct timespec res;
+    struct timespec timeSpec;
 
-    clock_gettime(CLOCK_MONOTONIC, &res);
-    timeInfo.currentTime = (PaTime) (res.tv_sec + (res.tv_nsec / 1000000000.0)); // (PaTime) time(NULL);
+    clock_gettime( CLOCK_REALTIME, &timeSpec );
+    timeInfo.currentTime = (PaTime) (timeSpec.tv_sec + (timeSpec.tv_nsec / 1000000000.0)); // (PaTime) time(NULL);
     timeInfo.outputBufferDacTime = (PaTime) (stream->framesPerHostCallback / stream->streamRepresentation.streamInfo.sampleRate + timeInfo.currentTime);
 
     /* check if StopStream or AbortStream was called */
-    if ( stream->doStop ) {
+    if ( stream->doStop )
         stream->callbackResult = paComplete;
-    } else if ( stream->doAbort ) {
+    else if ( stream->doAbort )
         stream->callbackResult = paAbort;
-    }
 
-    PaUtil_BeginCpuLoadMeasurement(&(stream->cpuLoadMeasurer));
-
+    PaUtil_BeginCpuLoadMeasurement( &stream->cpuLoadMeasurer );
     /* configure buffers */
     PaUtil_BeginBufferProcessing( &stream->bufferProcessor, &timeInfo, stream->cbFlags );
     PaUtil_SetOutputFrameCount( &stream->bufferProcessor, 0 );
     PaUtil_SetInterleavedOutputChannels( &stream->bufferProcessor, 0, (void*) stream->outputBuffers[stream->currentBuffer], 0 );
 
     /* continue processing user buffers if cbresult is pacontinue or if cbresult is  pacomplete and buffers aren't empty yet  */
-    if ( stream->callbackResult == paContinue || (stream->callbackResult == paComplete && !PaUtil_IsBufferProcessorOutputEmpty( &stream->bufferProcessor ) ) )
+    if ( stream->callbackResult == paContinue || ( stream->callbackResult == paComplete && !PaUtil_IsBufferProcessorOutputEmpty( &stream->bufferProcessor )) )
         framesProcessed = PaUtil_EndBufferProcessing( &stream->bufferProcessor, &stream->callbackResult );
 
     /* TODO opensl we can enqueue a buffer only when there are frames to be processed, this will be 0 when paComplete + empty buffers or paAbort */
-    if ( framesProcessed  > 0 ) {
-        pthread_mutex_lock( &stream->mtx );
-        slResult = (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) stream->outputBuffers[stream->currentBuffer], framesProcessed * 2 );
+    if ( framesProcessed  > 0 )
+    {
+        (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) stream->outputBuffers[stream->currentBuffer], framesProcessed * stream->bytesPerFrame );
         stream->currentBuffer = (stream->currentBuffer + 1) % NUMBER_OF_BUFFERS;
-        pthread_mutex_unlock( &stream->mtx );
     }
 
-    PaUtil_EndCpuLoadMeasurement( &(stream->cpuLoadMeasurer), framesProcessed);
+    PaUtil_EndCpuLoadMeasurement( &stream->cpuLoadMeasurer, framesProcessed);
 }
 
-static void PrefetchStatusCallback(void *userData) {
-    /* TODO if getfilllevel == 0 && underflow, panic */
+static void PrefetchStatusCallback(SLPrefetchStatusItf prefetchStatusItf, void *userData, SLuint32 event)
+{
     SLuint32 prefetchStatus = 2;
-    PaSkeletonStream *stream = (PaSkeletonStream*) userData;
-    //    (*stream->prefetchStatusItf)->GetPrefetchStatus(stream->prefetchStatusItf, &prefetchStatus);
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "status %d", prefetchStatus);
-    if ( prefetchStatus == SL_PREFETCHSTATUS_UNDERFLOW ) {
-        pthread_mutex_lock( &stream->mtx );
+    OpenslesStream *stream = (OpenslesStream*) userData;
+    (*stream->prefetchStatusItf)->GetPrefetchStatus(stream->prefetchStatusItf, &prefetchStatus);
+    if ( event & SL_PREFETCHEVENT_STATUSCHANGE && prefetchStatus == SL_PREFETCHSTATUS_UNDERFLOW )
+    {
         stream->cbFlags = paOutputUnderflow;
-        pthread_mutex_unlock( &stream->mtx );
-    } else if ( prefetchStatus == SL_PREFETCHSTATUS_OVERFLOW ) {
-        pthread_mutex_lock( &stream->mtx );
+    } 
+    else if ( event & SL_PREFETCHEVENT_STATUSCHANGE && prefetchStatus == SL_PREFETCHSTATUS_OVERFLOW ) 
+    {
         stream->cbFlags = paOutputOverflow;
-        pthread_mutex_unlock( &stream->mtx );
     }
 }
 
@@ -903,27 +859,27 @@ static void PrefetchStatusCallback(void *userData) {
 static PaError CloseStream( PaStream* s )
 {
     PaError result = paNoError;
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
+    int i;
 
-    /*
-        IMPLEMENT ME:
-            - additional stream closing + cleanup
-    */
-    pthread_mutex_lock(&stream->mtx);
-    (*stream->audioPlayer)->Destroy(stream->audioPlayer);
-    stream->audioPlayer = NULL;
-    stream->playerItf = NULL;
-    stream->prefetchStatusItf = NULL;
-    stream->outputBufferQueueItf = NULL;
-    (*stream->outputMixObject)->Destroy(stream->outputMixObject);
-    stream->outputMixObject = NULL;
-    pthread_mutex_unlock(&stream->mtx);
+    SLuint32 state;
+    SLuint32 playState;
+    (*stream->audioPlayer)->GetState( stream->audioPlayer, &state );
+    (*stream->playerItf)->GetPlayState( stream->playerItf, &playState);
 
-    pthread_mutex_destroy(&stream->mtx);
+    if ( playState != SL_PLAYSTATE_STOPPED ) {
+        (*stream->playerItf)->SetPlayState( stream->playerItf, SL_PLAYSTATE_STOPPED );
+        stream->isActive = SL_BOOLEAN_FALSE;
+        stream->isStopped = SL_BOOLEAN_TRUE;
+    }
+    (*stream->audioPlayer)->Destroy( stream->audioPlayer );
+    (*stream->outputMixObject)->Destroy( stream->outputMixObject );
+
+    //    pthread_mutex_destroy( &stream->mtx );
+    //    pthread_cond_destroy( &stream->cond );
 
     PaUtil_TerminateBufferProcessor( &stream->bufferProcessor );
     PaUtil_TerminateStreamRepresentation( &stream->streamRepresentation );
-    PaUtil_FreeMemory( stream->outputBuffers );
     PaUtil_FreeMemory( stream );
     return result;
 }
@@ -933,68 +889,52 @@ static PaError StartStream( PaStream *s )
 {
     SLresult slResult;
     PaError result = paNoError;
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
     int i;
 
     PaUtil_ResetBufferProcessor( &stream->bufferProcessor );
-    
-    /* IMPLEMENT ME, see portaudio.h for required behavior */
-
-    /* suppress unused function warning. the code in ExampleHostProcessingLoop or
-       something similar should be implemented to feed samples to and from the
-       host after StartStream() is called.
-    */
 
     (*stream->volumeItf)->SetVolumeLevel( stream->volumeItf, -300 );
-
     stream->isStopped = SL_BOOLEAN_FALSE;
     stream->isActive = SL_BOOLEAN_TRUE;
     stream->doStop = SL_BOOLEAN_FALSE;
     stream->doAbort = SL_BOOLEAN_FALSE;
 
-
     if ( !stream->isBlocking ) {
         stream->callbackResult = paContinue;
-        SLint16 zeroBuffer[stream->framesPerHostCallback];
-        memset(zeroBuffer, NULL, stream->framesPerHostCallback * 2);
-        for ( i = 0; i < NUMBER_OF_BUFFERS; ++i )
-            slResult = (*stream->outputBufferQueueItf)->Enqueue(stream->outputBufferQueueItf, (void*) zeroBuffer, stream->framesPerHostCallback * 2);
     }
+    SLint16 zeroBuffer[stream->framesPerHostCallback];
+    memset( zeroBuffer, 0, stream->framesPerHostCallback * stream->bytesPerFrame );
+    for ( i = 0; i < NUMBER_OF_BUFFERS; ++i )
+        slResult = (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) zeroBuffer, stream->framesPerHostCallback * stream->bytesPerFrame );
 
-    slResult = (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_PLAYING);
-    if (slResult != SL_RESULT_SUCCESS) {
-        /* TODO opensles return error */
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "couldn't set playstate to playing");
-        result = paUnanticipatedHostError;
-    }
+    slResult = (*stream->playerItf)->SetPlayState( stream->playerItf, SL_PLAYSTATE_PLAYING );
+    result = slResult == SL_RESULT_SUCCESS ? paNoError : paUnanticipatedHostError;
 
     return result;
 }
 
 static PaError StopStream( PaStream *s )
 {
-    assert(s);
     PaError result = paNoError;
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
     SLAndroidSimpleBufferQueueState state;
 
-    pthread_mutex_lock( &stream->mtx );
-    stream->doStop = SL_BOOLEAN_TRUE;
-    pthread_mutex_unlock( &stream->mtx );
+    if ( !stream->isBlocking ) {
+
+        stream->doStop = SL_BOOLEAN_TRUE;
+    
+    }
 
     do {
-        (*stream->outputBufferQueueItf)->GetState(stream->outputBufferQueueItf, &state);
-    } while ( state.count > 0 ); /* while the queue has got stuff in it, wait */
+        (*stream->outputBufferQueueItf)->GetState( stream->outputBufferQueueItf, &state);
+    } while ( state.count > 0 ); /* while buffers are queued, wait */
 
-    
-    pthread_mutex_lock( &stream->mtx );
-    (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_STOPPED);
+    (*stream->playerItf)->SetPlayState( stream->playerItf, SL_PLAYSTATE_STOPPED );
     stream->isActive = SL_BOOLEAN_FALSE;
     stream->isStopped = SL_BOOLEAN_TRUE;
-    pthread_mutex_unlock( &stream->mtx );
-
     if( stream->streamRepresentation.streamFinishedCallback != NULL )
-     stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
+        stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
 
     return result;
 }
@@ -1002,14 +942,12 @@ static PaError StopStream( PaStream *s )
 static PaError AbortStream( PaStream *s )
 {
     PaError result = paNoError;
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
 
-    pthread_mutex_lock( &stream->mtx );
-    (*stream->playerItf)->SetPlayState(stream->playerItf, SL_PLAYSTATE_STOPPED);
+    (*stream->playerItf)->SetPlayState( stream->playerItf, SL_PLAYSTATE_STOPPED );
     stream->isActive = SL_BOOLEAN_FALSE;
     stream->isStopped = SL_BOOLEAN_TRUE;
-    pthread_mutex_unlock( &stream->mtx );
-    
+
     if( stream->streamRepresentation.streamFinishedCallback != NULL )
         stream->streamRepresentation.streamFinishedCallback( stream->streamRepresentation.userData );
     return result;
@@ -1018,40 +956,27 @@ static PaError AbortStream( PaStream *s )
 
 static PaError IsStreamStopped( PaStream *s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
-
-    /* suppress unused variable warnings */
-    /* IMPLEMENT ME, see portaudio.h for required behavior */
-
+    OpenslesStream *stream = (OpenslesStream*)s;
     return stream->isStopped;
 }
 
 
 static PaError IsStreamActive( PaStream *s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
-
-    /* suppress unused variable warnings */
+    OpenslesStream *stream = (OpenslesStream*)s;
     return stream->isActive;
 }
 
 
 static PaTime GetStreamTime( PaStream *s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
-
-    /* suppress unused variable warnings */
-    (void) stream;
-    
-    /* IMPLEMENT ME, see portaudio.h for required behavior*/
-
-    return 0;
+    return PaUtil_GetTime();
 }
 
 
 static double GetStreamCpuLoad( PaStream* s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
 
     return PaUtil_GetCpuLoad( &stream->cpuLoadMeasurer );
 }
@@ -1067,7 +992,7 @@ static PaError ReadStream( PaStream* s,
                            void *buffer,
                            unsigned long frames )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
 
     /* suppress unused variable warnings */
     (void) buffer;
@@ -1084,25 +1009,38 @@ static PaError WriteStream( PaStream* s,
                             const void *buffer,
                             unsigned long frames )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
-    SLAndroidSimpleBufferQueueState state;
-    int index = 0;
-    char* p = (char*) buffer;
-    while ( frames > 0 && GetStreamWriteAvailable( s ) > 0 ) { // while there are frames
-        unsigned long framesToWrite = frames; // PA_MIN_(stream->framesPerHostCallback, frames);
-        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, " p %d, frames %d, frames %d", p, framesToWrite, frames);
-        (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, (void*) p, framesToWrite * 2 );
-        frames -= framesToWrite;
-        p += framesToWrite;
-            
-    }
+    OpenslesStream *stream = (OpenslesStream*)s;
+    const void *userBuffer = buffer;
 
+    while ( frames > 0 )
+    {
+        if ( GetStreamWriteAvailable( stream ) > 0 ) /* we have available frames */
+        {
+            unsigned long framesToWrite = PA_MIN( stream->framesPerHostCallback, frames );
+            PaUtil_SetOutputFrameCount( &stream->bufferProcessor, framesToWrite );
+            PaUtil_SetInterleavedOutputChannels( &stream->bufferProcessor, 0, stream->outputBuffers[stream->currentBuffer], 0 );
+            PaUtil_CopyOutput( &stream->bufferProcessor, &userBuffer, framesToWrite);
+
+            (*stream->outputBufferQueueItf)->Enqueue( stream->outputBufferQueueItf, stream->outputBuffers[stream->currentBuffer], framesToWrite * stream->bytesPerFrame );
+            stream->currentBuffer = (stream->currentBuffer + 1) % NUMBER_OF_BUFFERS;
+
+            frames -= framesToWrite;
+        }
+        else /* Bufferqueue is full and there are frames to write, so we wait */
+        {
+            SLAndroidSimpleBufferQueueState state;
+            (*stream->outputBufferQueueItf)->GetState( stream->outputBufferQueueItf, &state );
+            do {
+                (*stream->outputBufferQueueItf)->GetState( stream->outputBufferQueueItf, &state );
+            } while ( state.count >= NUMBER_OF_BUFFERS ); /* there are as much buffers in the queue as there are buffers in total, wait until there is at least one free */
+        }
+    }
     return paNoError;
 }
 
 static signed long GetStreamReadAvailable( PaStream* s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
 
     /* suppress unused variable warnings */
     (void) stream;
@@ -1115,10 +1053,10 @@ static signed long GetStreamReadAvailable( PaStream* s )
 /* TODO opensles this should be framesperhostcallback * NUMBER_OF_BUFFERS - framesperhostcallback * slbufferqueuestatestate.count */
 static signed long GetStreamWriteAvailable( PaStream* s )
 {
-    PaSkeletonStream *stream = (PaSkeletonStream*)s;
+    OpenslesStream *stream = (OpenslesStream*)s;
     SLAndroidSimpleBufferQueueState state;
 
-    (*stream->outputBufferQueueItf)->GetState(stream->outputBufferQueueItf, &state);
+    (*stream->outputBufferQueueItf)->GetState( stream->outputBufferQueueItf, &state );
 
     return stream->framesPerHostCallback * ( NUMBER_OF_BUFFERS - state.count );
 }
