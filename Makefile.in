@@ -151,7 +151,8 @@ SRC_DIRS = \
 	src/hostapi/wmme \
 	src/hostapi/opensles \
 	src/os/unix \
-	src/os/win
+	src/os/win \
+	src/hostapi/opensles
 
 
 SUBDIRS =
