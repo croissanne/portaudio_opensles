@@ -400,11 +400,28 @@ case "${host_os}" in
         SHARED_FLAGS=""
         ;;
 
+  linux-androideabi* )
+        dnl Androi configuration, this is separate because we don't need to link pthread explicitly
+        CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
+
+        if [[ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]]; then
+           LIBS="$LIBS -lOpenSLES"
+           DLL_LIBS="$DLL_LIBS -lOpenSLES"
+           OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
+           AC_DEFINE(PA_USE_OPENSLES,1)
+        fi
+
+        DLL_LIBS="$DLL_LIBS -lm"
+        LIBS="$LIBS -lm"
+        PADLL="libportaudio.so"
+
+        OTHER_OBJS="$OTHER_OBJS src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
+
+        ;;
+
   *)
         dnl Unix configuration
-
         CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
-        #TODO opensles on android pthread doesn't exist in the same way. You don't need to include it, so this first check doesn't need to happen on android.
         AC_CHECK_LIB(pthread, pthread_create,[have_pthread="yes"],
                 AC_MSG_ERROR([libpthread not found!]))
 
@@ -438,13 +455,6 @@ case "${host_os}" in
            DLL_LIBS="$DLL_LIBS -lhpi"
            OTHER_OBJS="$OTHER_OBJS src/hostapi/asihpi/pa_linux_asihpi.o"
            AC_DEFINE(PA_USE_ASIHPI,1)
-        fi
-
-        if [[ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]]; then
-           LIBS="$LIBS -lOpenSLES"
-           DLL_LIBS="$DLL_LIBS -lOpenSLES"
-           OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
-           AC_DEFINE(PA_USE_OPENSLES,1)
         fi
 
         DLL_LIBS="$DLL_LIBS -lm -lpthread"
@@ -533,7 +543,6 @@ case "$target_os" in
 	AC_MSG_RESULT([
   OSS ......................... $have_oss
   JACK ........................ $have_jack
-  OpenSLES .................... $have_opensles
 ])
         ;;
 esac

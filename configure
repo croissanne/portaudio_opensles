@@ -16163,10 +16163,27 @@ fi
         SHARED_FLAGS=""
         ;;
 
-  *)
+  linux-androideabi* )
+                CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
 
-        CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
-        #TODO opensles on android pthread doesn't exist in the same way. You don't need to include it, so this first check doesn't need to happen on android.
+        if [ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]; then
+           LIBS="$LIBS -lOpenSLES"
+           DLL_LIBS="$DLL_LIBS -lOpenSLES"
+           OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
+           $as_echo "#define PA_USE_OPENSLES 1" >>confdefs.h
+
+        fi
+
+        DLL_LIBS="$DLL_LIBS -lm"
+        LIBS="$LIBS -lm"
+        PADLL="libportaudio.so"
+
+        OTHER_OBJS="$OTHER_OBJS src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
+
+        ;;
+
+  *)
+                CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
 $as_echo_n "checking for pthread_create in -lpthread... " >&6; }
 if ${ac_cv_lib_pthread_pthread_create+:} false; then :
@@ -16243,14 +16260,6 @@ fi
            DLL_LIBS="$DLL_LIBS -lhpi"
            OTHER_OBJS="$OTHER_OBJS src/hostapi/asihpi/pa_linux_asihpi.o"
            $as_echo "#define PA_USE_ASIHPI 1" >>confdefs.h
-
-        fi
-
-        if [ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]; then
-           LIBS="$LIBS -lOpenSLES"
-           DLL_LIBS="$DLL_LIBS -lOpenSLES"
-           OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
-           $as_echo "#define PA_USE_OPENSLES 1" >>confdefs.h
 
         fi
 
@@ -18880,12 +18889,10 @@ $as_echo "
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result:
   OSS ......................... $have_oss
   JACK ........................ $have_jack
-  OpenSLES .................... $have_opensles
 " >&5
 $as_echo "
   OSS ......................... $have_oss
   JACK ........................ $have_jack
-  OpenSLES .................... $have_opensles
 " >&6; }
         ;;
 esac
