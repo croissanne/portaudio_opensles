@@ -67,7 +67,6 @@
 #include "pa_unix_util.h"
 #include "pa_debugprint.h"
 
-#define APPNAME "PORTAUDIO_OPENSL"
 #define NUMBER_OF_ENGINE_OPTIONS 2
 #define NUMBER_OF_BUFFERS 2
 
