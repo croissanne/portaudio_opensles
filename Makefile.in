@@ -153,7 +153,6 @@ SRC_DIRS = \
 	src/os/unix \
 	src/os/win
 
-
 SUBDIRS =
 @ENABLE_CXX_TRUE@SUBDIRS += bindings/cpp
 
