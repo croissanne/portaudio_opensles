@@ -32,7 +32,6 @@ AC_ARG_WITH(oss,
             AS_HELP_STRING([--with-oss], [Enable support for OSS @<:@autodetect@:>@]),
             [with_oss=$withval])
 
-# TODO opensles added this, dunno how to do the autodetect yet?
 AC_ARG_WITH(opensles,
             AS_HELP_STRING([--with-opensles], [Enable support for OpenSLES @<:@autodetect@:>@]),
             [with_opensles=$withval])
@@ -141,7 +140,7 @@ have_jack=no
 if test "x$with_jack" != "xno"; then
     PKG_CHECK_MODULES(JACK, jack, have_jack=yes, have_jack=no)
 fi
-#TODO opensl we need a check, this needs the ndk. Don't really know how to do this.
+
 have_opensles=no
 if test "x$with_opensles" != "xno"; then
    AC_CHECK_LIB(OpenSLES, slCreateEngine, have_opensles=yes, have_opensles=no)
