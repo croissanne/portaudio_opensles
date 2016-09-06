@@ -2691,7 +2691,6 @@ if test "${with_oss+set}" = set; then :
 fi
 
 
-# TODO opensles added this, dunno how to do the autodetect yet?
 
 # Check whether --with-opensles was given.
 if test "${with_opensles+set}" = set; then :
@@ -15623,7 +15622,7 @@ $as_echo "yes" >&6; }
 	have_jack=yes
 fi
 fi
-#TODO opensl we need a check, this needs the ndk. Don't really know how to do this.
+
 have_opensles=no
 if test "x$with_opensles" != "xno"; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for slCreateEngine in -lOpenSLES" >&5
