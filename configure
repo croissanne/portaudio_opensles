@@ -10266,11 +10266,11 @@ need_version=unknown
 case $host_os in
 aix3*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix $libname.a'
   shlibpath_var=LIBPATH
 
   # AIX 3 has no versioning support, so we append a major version to the name.
-  soname_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   ;;
 
 aix[4-9]*)
@@ -10280,7 +10280,7 @@ aix[4-9]*)
   hardcode_into_libs=yes
   if test "$host_cpu" = ia64; then
     # AIX 5 supports IA64
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$major ${libname}${release}${shared_ext}$versuffix $libname${shared_ext}'
     shlibpath_var=LD_LIBRARY_PATH
   else
     # With GCC up to 2.95.x, collect2 would create an import file
@@ -10306,12 +10306,12 @@ aix[4-9]*)
       # If using run time linking (on AIX 4.2 or later) use lib<name>.so
       # instead of lib<name>.a to let people know that these are not
       # typical AIX shared libraries.
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
     else
       # We preserve .a as extension for shared libraries through AIX4.2
       # and later when we are not doing run time linking.
-      library_names_spec='${libname}${shared_ext}'
-      soname_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}.a $libname.a'
+      soname_spec='${libname}${release}${shared_ext}$major'
     fi
     shlibpath_var=LIBPATH
   fi
@@ -10322,7 +10322,7 @@ amigaos*)
   powerpc)
     # Since July 2007 AmigaOS4 officially supports .so libraries.
     # When compiling the executable, add -use-dynld -Lsobjs: to the compileline.
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
     ;;
   m68k)
     library_names_spec='$libname.ixlibrary $libname.a'
@@ -10341,8 +10341,8 @@ beos*)
 bsdi[45]*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
@@ -10467,8 +10467,8 @@ darwin* | rhapsody*)
   version_type=darwin
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${major}$shared_ext ${libname}$shared_ext'
+  soname_spec='${libname}${release}${major}$shared_ext'
   shlibpath_overrides_runpath=yes
   shlibpath_var=DYLD_LIBRARY_PATH
   shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
@@ -10481,8 +10481,8 @@ dgux*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname$shared_ext'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
@@ -10500,12 +10500,12 @@ freebsd* | dragonfly*)
   version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext} $libname${shared_ext}'
       need_version=no
       need_lib_prefix=no
       ;;
     freebsd-*)
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix $libname${shared_ext}$versuffix'
       need_version=yes
       ;;
   esac
@@ -10535,8 +10535,8 @@ haiku*)
   need_lib_prefix=no
   need_version=no
   dynamic_linker="$host_os runtime_loader"
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   sys_lib_dlsearch_path_spec='/boot/home/config/lib /boot/common/lib /boot/system/lib'
@@ -10556,8 +10556,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.so"
     shlibpath_var=LD_LIBRARY_PATH
     shlibpath_overrides_runpath=yes # Unless +noenvvar is specified.
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     if test "X$HPUX_IA64_MODE" = X32; then
       sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
     else
@@ -10571,8 +10571,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.sl"
     shlibpath_var=LD_LIBRARY_PATH # How should we handle SHLIB_PATH
     shlibpath_overrides_runpath=yes # Unless +noenvvar is specified.
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     sys_lib_search_path_spec="/usr/lib/pa20_64 /usr/ccs/lib/pa20_64"
     sys_lib_dlsearch_path_spec=$sys_lib_search_path_spec
     ;;
@@ -10581,8 +10581,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.sl"
     shlibpath_var=SHLIB_PATH
     shlibpath_overrides_runpath=no # +s is required to enable SHLIB_PATH
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     ;;
   esac
   # HP-UX runs *really* slowly unless shared libraries are mode 555, ...
@@ -10595,8 +10595,8 @@ interix[3-9]*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   dynamic_linker='Interix 3.x ld.so.1 (PE, like ELF)'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
@@ -10615,8 +10615,8 @@ irix5* | irix6* | nonstopux*)
   esac
   need_lib_prefix=no
   need_version=no
-  soname_spec='${libname}${shared_ext}'
-  library_names_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${release}${shared_ext} $libname${shared_ext}'
   case $host_os in
   irix5* | nonstopux*)
     libsuff= shlibsuff=
@@ -10650,8 +10650,8 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
@@ -10714,8 +10714,8 @@ netbsdelf*-gnu)
   version_type=linux
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -10727,12 +10727,12 @@ netbsd*)
   need_lib_prefix=no
   need_version=no
   if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
     finish_cmds='PATH="\$PATH:/sbin" ldconfig -m $libdir'
     dynamic_linker='NetBSD (a.out) ld.so'
   else
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     dynamic_linker='NetBSD ld.elf_so'
   fi
   shlibpath_var=LD_LIBRARY_PATH
@@ -10742,7 +10742,7 @@ netbsd*)
 
 newsos6)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   ;;
@@ -10751,8 +10751,8 @@ newsos6)
   version_type=qnx
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -10768,7 +10768,7 @@ openbsd*)
     openbsd3.3 | openbsd3.3.*)	need_version=yes ;;
     *)				need_version=no  ;;
   esac
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -m $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   if test -z "`echo __ELF__ | $CC -E - | $GREP __ELF__`" || test "$host_os-$host_cpu" = "openbsd2.8-powerpc"; then
@@ -10798,8 +10798,8 @@ osf3* | osf4* | osf5*)
   version_type=osf
   need_lib_prefix=no
   need_version=no
-  soname_spec='${libname}${shared_ext}'
-  library_names_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
   sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
@@ -10813,8 +10813,8 @@ solaris*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   hardcode_into_libs=yes
@@ -10824,7 +10824,7 @@ solaris*)
 
 sunos4*)
   version_type=sunos
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
   finish_cmds='PATH="\$PATH:/usr/etc" ldconfig $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
@@ -10836,8 +10836,8 @@ sunos4*)
 
 sysv4 | sysv4.3*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   case $host_vendor in
     sni)
@@ -10870,8 +10870,8 @@ sysv5* | sco3.2v5* | sco5v6* | unixware* | OpenUNIX* | sysv4*uw2*)
   version_type=freebsd-elf
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext} $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   hardcode_into_libs=yes
@@ -10893,7 +10893,7 @@ tpf*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -10901,8 +10901,8 @@ tpf*)
 
 uts4*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
@@ -14100,11 +14100,11 @@ need_version=unknown
 case $host_os in
 aix3*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix $libname.a'
   shlibpath_var=LIBPATH
 
   # AIX 3 has no versioning support, so we append a major version to the name.
-  soname_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   ;;
 
 aix[4-9]*)
@@ -14114,7 +14114,7 @@ aix[4-9]*)
   hardcode_into_libs=yes
   if test "$host_cpu" = ia64; then
     # AIX 5 supports IA64
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$major ${libname}${release}${shared_ext}$versuffix $libname${shared_ext}'
     shlibpath_var=LD_LIBRARY_PATH
   else
     # With GCC up to 2.95.x, collect2 would create an import file
@@ -14140,12 +14140,12 @@ aix[4-9]*)
       # If using run time linking (on AIX 4.2 or later) use lib<name>.so
       # instead of lib<name>.a to let people know that these are not
       # typical AIX shared libraries.
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
     else
       # We preserve .a as extension for shared libraries through AIX4.2
       # and later when we are not doing run time linking.
-      library_names_spec='${libname}${shared_ext}'
-      soname_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}.a $libname.a'
+      soname_spec='${libname}${release}${shared_ext}$major'
     fi
     shlibpath_var=LIBPATH
   fi
@@ -14156,7 +14156,7 @@ amigaos*)
   powerpc)
     # Since July 2007 AmigaOS4 officially supports .so libraries.
     # When compiling the executable, add -use-dynld -Lsobjs: to the compileline.
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
     ;;
   m68k)
     library_names_spec='$libname.ixlibrary $libname.a'
@@ -14175,8 +14175,8 @@ beos*)
 bsdi[45]*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
@@ -14300,8 +14300,8 @@ darwin* | rhapsody*)
   version_type=darwin
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${major}$shared_ext ${libname}$shared_ext'
+  soname_spec='${libname}${release}${major}$shared_ext'
   shlibpath_overrides_runpath=yes
   shlibpath_var=DYLD_LIBRARY_PATH
   shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
@@ -14313,8 +14313,8 @@ dgux*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname$shared_ext'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
@@ -14332,12 +14332,12 @@ freebsd* | dragonfly*)
   version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext} $libname${shared_ext}'
       need_version=no
       need_lib_prefix=no
       ;;
     freebsd-*)
-      library_names_spec='${libname}${shared_ext}'
+      library_names_spec='${libname}${release}${shared_ext}$versuffix $libname${shared_ext}$versuffix'
       need_version=yes
       ;;
   esac
@@ -14367,8 +14367,8 @@ haiku*)
   need_lib_prefix=no
   need_version=no
   dynamic_linker="$host_os runtime_loader"
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   sys_lib_dlsearch_path_spec='/boot/home/config/lib /boot/common/lib /boot/system/lib'
@@ -14388,8 +14388,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.so"
     shlibpath_var=LD_LIBRARY_PATH
     shlibpath_overrides_runpath=yes # Unless +noenvvar is specified.
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     if test "X$HPUX_IA64_MODE" = X32; then
       sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
     else
@@ -14403,8 +14403,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.sl"
     shlibpath_var=LD_LIBRARY_PATH # How should we handle SHLIB_PATH
     shlibpath_overrides_runpath=yes # Unless +noenvvar is specified.
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     sys_lib_search_path_spec="/usr/lib/pa20_64 /usr/ccs/lib/pa20_64"
     sys_lib_dlsearch_path_spec=$sys_lib_search_path_spec
     ;;
@@ -14413,8 +14413,8 @@ hpux9* | hpux10* | hpux11*)
     dynamic_linker="$host_os dld.sl"
     shlibpath_var=SHLIB_PATH
     shlibpath_overrides_runpath=no # +s is required to enable SHLIB_PATH
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     ;;
   esac
   # HP-UX runs *really* slowly unless shared libraries are mode 555, ...
@@ -14427,8 +14427,8 @@ interix[3-9]*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   dynamic_linker='Interix 3.x ld.so.1 (PE, like ELF)'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
@@ -14447,8 +14447,8 @@ irix5* | irix6* | nonstopux*)
   esac
   need_lib_prefix=no
   need_version=no
-  soname_spec='${libname}${shared_ext}'
-  library_names_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${release}${shared_ext} $libname${shared_ext}'
   case $host_os in
   irix5* | nonstopux*)
     libsuff= shlibsuff=
@@ -14482,8 +14482,8 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
@@ -14546,8 +14546,8 @@ netbsdelf*-gnu)
   version_type=linux
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -14559,12 +14559,12 @@ netbsd*)
   need_lib_prefix=no
   need_version=no
   if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
-    library_names_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
     finish_cmds='PATH="\$PATH:/sbin" ldconfig -m $libdir'
     dynamic_linker='NetBSD (a.out) ld.so'
   else
-    library_names_spec='${libname}${shared_ext}'
-    soname_spec='${libname}${shared_ext}'
+    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+    soname_spec='${libname}${release}${shared_ext}$major'
     dynamic_linker='NetBSD ld.elf_so'
   fi
   shlibpath_var=LD_LIBRARY_PATH
@@ -14574,7 +14574,7 @@ netbsd*)
 
 newsos6)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   ;;
@@ -14583,8 +14583,8 @@ newsos6)
   version_type=qnx
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -14600,7 +14600,7 @@ openbsd*)
     openbsd3.3 | openbsd3.3.*)	need_version=yes ;;
     *)				need_version=no  ;;
   esac
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -m $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   if test -z "`echo __ELF__ | $CC -E - | $GREP __ELF__`" || test "$host_os-$host_cpu" = "openbsd2.8-powerpc"; then
@@ -14630,8 +14630,8 @@ osf3* | osf4* | osf5*)
   version_type=osf
   need_lib_prefix=no
   need_version=no
-  soname_spec='${libname}${shared_ext}'
-  library_names_spec='${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
   sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
@@ -14645,8 +14645,8 @@ solaris*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   hardcode_into_libs=yes
@@ -14656,7 +14656,7 @@ solaris*)
 
 sunos4*)
   version_type=sunos
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
   finish_cmds='PATH="\$PATH:/usr/etc" ldconfig $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
@@ -14668,8 +14668,8 @@ sunos4*)
 
 sysv4 | sysv4.3*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   case $host_vendor in
     sni)
@@ -14702,8 +14702,8 @@ sysv5* | sco3.2v5* | sco5v6* | unixware* | OpenUNIX* | sysv4*uw2*)
   version_type=freebsd-elf
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext} $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=yes
   hardcode_into_libs=yes
@@ -14725,7 +14725,7 @@ tpf*)
   version_type=linux # correct to gnu/linux during the next big refactor
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
   hardcode_into_libs=yes
@@ -14733,8 +14733,8 @@ tpf*)
 
 uts4*)
   version_type=linux # correct to gnu/linux during the next big refactor
-  library_names_spec='${libname}${shared_ext}'
-  soname_spec='${libname}${shared_ext}'
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
@@ -15602,7 +15602,52 @@ $as_echo "yes" >&6; }
 fi
 fi
 #TODO opensl we need a check, this needs the ndk. Don't really know how to do this.
-have_opensles=yes
+have_opensles=no
+if test "x$with_opensles" != "xno"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for slCreateEngine in -lOpenSLES" >&5
+$as_echo_n "checking for slCreateEngine in -lOpenSLES... " >&6; }
+if ${ac_cv_lib_OpenSLES_slCreateEngine+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lOpenSLES  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char slCreateEngine ();
+int
+main ()
+{
+return slCreateEngine ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_OpenSLES_slCreateEngine=yes
+else
+  ac_cv_lib_OpenSLES_slCreateEngine=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_OpenSLES_slCreateEngine" >&5
+$as_echo "$ac_cv_lib_OpenSLES_slCreateEngine" >&6; }
+if test "x$ac_cv_lib_OpenSLES_slCreateEngine" = xyes; then :
+  have_opensles=yes
+else
+  have_opensles=no
+fi
+
+fi
+
 
 
 # The cast to long int works around a bug in the HP C Compiler
@@ -15962,14 +16007,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         ;;
 
   irix* )
-                                #TODO opensles on android pthread doesn't exist in the same way. You don't need to include it, so this first check doesn't need to happen on android.
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in " >&5
-$as_echo_n "checking for pthread_create in ... " >&6; }
+                                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
 if ${ac_cv_lib_pthread_pthread_create+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="  $LIBS"
+LIBS="-lpthread  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -15991,7 +16035,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   ac_cv_lib_pthread_pthread_create=yes
 else
-  ac_cv_lib_pthread_pthread_create=yes
+  ac_cv_lib_pthread_pthread_create=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -16004,10 +16048,10 @@ if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
 #define HAVE_LIBPTHREAD 1
 _ACEOF
 
-  LIBS=" $LIBS"
+  LIBS="-lpthread $LIBS"
 
 else
-continue
+  as_fn_error $? "IRIX posix thread library not found!" "$LINENO" 5
 fi
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for alOpenPort in -laudio" >&5
@@ -16114,7 +16158,7 @@ fi
 
         OTHER_OBJS="pa_sgi/pa_sgi.o src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
 
-                        LIBS="-lm -ldmedia -laudio "
+                        LIBS="-lm -ldmedia -laudio -lpthread"
         PADLL="libportaudio.so"
         SHARED_FLAGS=""
         ;;
@@ -16123,13 +16167,13 @@ fi
 
         CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
         #TODO opensles on android pthread doesn't exist in the same way. You don't need to include it, so this first check doesn't need to happen on android.
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in " >&5
-$as_echo_n "checking for pthread_create in ... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
 if ${ac_cv_lib_pthread_pthread_create+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="  $LIBS"
+LIBS="-lpthread  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -16151,7 +16195,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   ac_cv_lib_pthread_pthread_create=yes
 else
-  ac_cv_lib_pthread_pthread_create=yes
+  ac_cv_lib_pthread_pthread_create=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -16201,17 +16245,17 @@ fi
            $as_echo "#define PA_USE_ASIHPI 1" >>confdefs.h
 
         fi
-        # TODO opensles add -lOpenSLES if opensl
-#        if [[ "$have_opensles" = "yes" ] && ["$with_opensles" != "no" ]]; then
+
+        if [ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]; then
            LIBS="$LIBS -lOpenSLES"
            DLL_LIBS="$DLL_LIBS -lOpenSLES"
            OTHER_OBJS="$OTHER_OBJS src/hostapi/opensles/pa_hostapi_opensles.o"
            $as_echo "#define PA_USE_OPENSLES 1" >>confdefs.h
 
-#        fi
+        fi
 
-        DLL_LIBS="$DLL_LIBS -lm "
-        LIBS="$LIBS -lm "
+        DLL_LIBS="$DLL_LIBS -lm -lpthread"
+        LIBS="$LIBS -lm -lpthread"
         PADLL="libportaudio.so"
 
         ## support sun cc compiler flags
@@ -18826,20 +18870,22 @@ $as_echo "
         ;;
      *linux-androideabi*)
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:
-  OpenSLES .................... $with_opensles
+  OpenSLES .................... $have_opensles
 " >&5
 $as_echo "
-  OpenSLES .................... $with_opensles
+  OpenSLES .................... $have_opensles
 " >&6; }
         ;;
      *)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result:
   OSS ......................... $have_oss
   JACK ........................ $have_jack
+  OpenSLES .................... $have_opensles
 " >&5
 $as_echo "
   OSS ......................... $have_oss
   JACK ........................ $have_jack
+  OpenSLES .................... $have_opensles
 " >&6; }
         ;;
 esac

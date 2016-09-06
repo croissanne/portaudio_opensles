@@ -1,4 +1,3 @@
-
 /*
  * $Id$
  * Portable Audio I/O Library skeleton implementation
@@ -42,10 +41,7 @@
 /** @file
  @ingroup common_src
 
- @brief Skeleton implementation of support for a host API.
-
- This file is provided as a starting point for implementing support for
- a new host API. It provides examples of how the common code can be used.
+ @brief opensles implementation of support for a host API.
 
  @note IMPLEMENT ME comments are used to indicate functionality
  which much be customised for each implementation.
@@ -332,7 +328,6 @@ PaError PaOpensles_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
     return result;
 
 error:
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "went to error in initializing opensl");
     if( openslHostApi )
     {
         if( openslHostApi->allocations )
@@ -349,7 +344,6 @@ error:
 
 static void Terminate( struct PaUtilHostApiRepresentation *hostApi )
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "terminating portaudio opensl");
     PaOpenslHostApiRepresentation *openslHostApi = (PaOpenslHostApiRepresentation*)hostApi;
 
     /*

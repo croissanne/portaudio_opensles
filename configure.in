@@ -533,6 +533,7 @@ case "$target_os" in
 	AC_MSG_RESULT([
   OSS ......................... $have_oss
   JACK ........................ $have_jack
+  OpenSLES .................... $have_opensles
 ])
         ;;
 esac
