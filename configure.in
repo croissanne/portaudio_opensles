@@ -401,7 +401,7 @@ case "${host_os}" in
         ;;
 
   linux-androideabi* )
-        dnl Androi configuration, this is separate because we don't need to link pthread explicitly
+        dnl Android configuration, this is separate because we don't need to link pthread explicitly
         CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
 
         if [[ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]]; then
