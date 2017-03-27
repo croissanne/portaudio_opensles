@@ -27,7 +27,7 @@ OpenSL ES on android does not support the OpenSL ES SLAudioIODeviceCapabilitiesI
 
 
 Prefetch underflow assert that fails:
-There is an assert(SL_PREFETCHSTATUS_UNDERFLOW == ap->mPrefetchStatus.mStatus) that fails (Src https://android.googlesource.com/platform/frameworks/wilhelm/+/91145ef159d3e165a461cbd76341ff8ed3d72bae/src/android/AudioPlayer_to_android.cpp) sometimes with a non-blocking audio output.
+There is an assert(SL_PREFETCHSTATUS_UNDERFLOW == ap->mPrefetchStatus.mStatus) that fails (Src https://android.googlesource.com/platform/frameworks/wilhelm/+/master/src/android/AudioPlayer_to_android.cpp) sometimes with a non-blocking audio output.
 
 This is an assert which tries to make sure that the prefetchitf was in SL_PREFETCHSTATUS_UNDERFLOW, when trying to re-enqueue/restart the buffers because the user didn't enqueue buffers for a while (and the buffers underflowed). This doesn't happen when you can supply the buffer fast enough of course. But the specification states that if you stop enqueueing buffers, it should just stop playing, if you enqueue buffers again, it should start up again, and it shouldn't abort the entire application.
 
