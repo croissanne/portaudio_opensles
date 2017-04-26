@@ -16822,7 +16822,7 @@ fi
         SHARED_FLAGS=""
         ;;
 
-  linux-androideabi* )
+  linux-android* )
                 CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
 
         if [ "$have_opensles" = "yes" ] && [ "$with_opensles" != "no" ]; then
@@ -16839,7 +16839,6 @@ fi
         PADLL="libportaudio.so"
 
         OTHER_OBJS="$OTHER_OBJS src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
-
         ;;
 
   *)
