@@ -691,7 +691,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
         return paInvalidFlag;
 
     if( framesPerBuffer == paFramesPerBufferUnspecified ) {
-        if(outputParameters) {
+        if( outputParameters ) {
             framesPerHostBuffer = (unsigned long) (outputParameters->suggestedLatency * sampleRate);
         }
         else {
