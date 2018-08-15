@@ -1,9 +1,10 @@
-language: android
 
 matrix:
     include:
 
         - env: test="Android NDK (CMake)"
+          os: linux
+          language: android
           install: 
               - echo y | sdkmanager "ndk-bundle"
               - echo y | sdkmanager "cmake;3.6.4111459"
