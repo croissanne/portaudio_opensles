@@ -5,6 +5,9 @@ matrix:
         - env: test="Android NDK (CMake)"
           os: linux
           language: android
+          android:
+            components:
+              - build-tools-25.0.2
           install: 
               - echo y | sdkmanager "ndk-bundle"
               - echo y | sdkmanager "cmake;3.6.4111459"
