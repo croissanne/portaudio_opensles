@@ -33,7 +33,7 @@ matrix:
               - $ANDROID_CMAKE -DANDROID_PLATFORM=android-15 -DANDROID_ABI=armeabi-v7a -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE ..
               - make && popd
 
-              - pushd . && mkdir android15_x86_dbgl && cd android15_x86_dbg
+              - pushd . && mkdir android15_x86_dbg && cd android15_x86_dbg
               - $ANDROID_CMAKE -DANDROID_PLATFORM=android-15 -DANDROID_ABI=x86 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE ..
               - make && popd
 
