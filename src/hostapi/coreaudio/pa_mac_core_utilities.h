@@ -81,7 +81,7 @@
 #define INPUT_ELEMENT  (1)
 #define OUTPUT_ELEMENT (0)
 
-/* Normal level of debugging: fine for most apps that don't mind the occational warning being printf'ed */
+/* Normal level of debugging: fine for most apps that don't mind the occasional warning being printf'ed */
 /*
  */
 #define MAC_CORE_DEBUG
@@ -91,7 +91,7 @@
 # define DBUG(MSG)
 #endif
 
-/* Verbose Debugging: useful for developement */
+/* Verbose Debugging: useful for development */
 /*
 #define MAC_CORE_VERBOSE_DEBUG
 */
@@ -111,9 +111,61 @@
 # define VVDBUG(MSG)
 #endif
 
+OSStatus PaMacCore_AudioHardwareGetProperty(
+    AudioHardwarePropertyID inPropertyID,
+    UInt32*                 ioPropertyDataSize,
+    void*                   outPropertyData);
 
+OSStatus PaMacCore_AudioHardwareGetPropertySize(
+    AudioHardwarePropertyID inPropertyID,
+    UInt32*                 outSize);
 
+OSStatus PaMacCore_AudioDeviceGetProperty(
+    AudioDeviceID         inDevice,
+    UInt32                inChannel,
+    Boolean               isInput,
+    AudioDevicePropertyID inPropertyID,
+    UInt32*               ioPropertyDataSize,
+    void*                 outPropertyData);
 
+OSStatus PaMacCore_AudioDeviceSetProperty(
+    AudioDeviceID         inDevice,
+    const AudioTimeStamp* inWhen,
+    UInt32                inChannel,
+    Boolean               isInput,
+    AudioDevicePropertyID inPropertyID,
+    UInt32                inPropertyDataSize,
+    const void*           inPropertyData);
+
+OSStatus PaMacCore_AudioDeviceGetPropertySize(
+    AudioDeviceID         inDevice,
+    UInt32                inChannel,
+    Boolean               isInput,
+    AudioDevicePropertyID inPropertyID,
+    UInt32*               outSize);
+
+OSStatus PaMacCore_AudioDeviceAddPropertyListener(
+    AudioDeviceID                   inDevice,
+    UInt32                          inChannel,
+    Boolean                         isInput,
+    AudioDevicePropertyID           inPropertyID,
+    AudioObjectPropertyListenerProc inProc,
+    void*                           inClientData);
+
+OSStatus PaMacCore_AudioDeviceRemovePropertyListener(
+    AudioDeviceID                   inDevice,
+    UInt32                          inChannel,
+    Boolean                         isInput,
+    AudioDevicePropertyID           inPropertyID,
+    AudioObjectPropertyListenerProc inProc,
+    void*                           inClientData);
+
+OSStatus PaMacCore_AudioStreamGetProperty(
+    AudioStreamID         inStream,
+    UInt32                inChannel,
+    AudioDevicePropertyID inPropertyID,
+    UInt32*               ioPropertyDataSize,
+    void*                 outPropertyData);
 
 #define UNIX_ERR(err) PaMacCore_SetUnixError( err, __LINE__ )
 
@@ -144,11 +196,10 @@ long computeRingBufferSize( const PaStreamParameters *inputParameters,
                                    double sampleRate );
 
 OSStatus propertyProc(
-    AudioDeviceID inDevice, 
-    UInt32 inChannel, 
-    Boolean isInput, 
-    AudioDevicePropertyID inPropertyID, 
-    void* inClientData );
+    AudioObjectID inObjectID,
+    UInt32 inNumberAddresses,
+    const AudioObjectPropertyAddress* inAddresses,
+    void* inClientData);
 
 /* sets the value of the given property and waits for the change to 
    be acknowledged, and returns the final value, which is not guaranteed
@@ -183,7 +234,7 @@ PaError setBestSampleRateForDevice( const AudioDeviceID device,
    is available, it uses the smallest available size.
    actualFramesPerBuffer will be set to the actual value on successful return.
    OK to pass NULL to actualFramesPerBuffer.
-   The logic is very simmilar too setBestSampleRate only failure here is
+   The logic is very similar too setBestSampleRate only failure here is
    not usually catastrophic.
 */
 PaError setBestFramesPerBuffer( const AudioDeviceID device,
@@ -199,16 +250,15 @@ PaError setBestFramesPerBuffer( const AudioDeviceID device,
  *********************/
 
 OSStatus xrunCallback(
-    AudioDeviceID inDevice, 
-    UInt32 inChannel, 
-    Boolean isInput, 
-    AudioDevicePropertyID inPropertyID, 
-    void* inClientData ) ;
+    AudioObjectID inObjectID,
+    UInt32 inNumberAddresses,
+    const AudioObjectPropertyAddress* inAddresses,
+    void * inClientData );
 
 /** returns zero on success or a unix style error code. */
-int initializeXRunListenerList();
+int initializeXRunListenerList( void );
 /** returns zero on success or a unix style error code. */
-int destroyXRunListenerList();
+int destroyXRunListenerList( void );
 
 /**Returns the list, so that it can be passed to CorAudio.*/
 void *addToXRunListenerList( void *stream );
