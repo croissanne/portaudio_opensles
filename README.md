@@ -1,3 +1,17 @@
+Portaudio with OpenSL ES implementation for android.
+
+example java apk:
+https://gundersanne.github.io/pa-android-tests/
+
+cli tests and source code of java example:
+https://github.com/Gundersanne/pa-android-tests
+
+README of opensles implementation with known issues:
+https://github.com/Gundersanne/portaudio_opensles/tree/master/src/hostapi/opensles
+
+
+Portaudio README:
+
 # PortAudio - portable audio I/O library
 
 PortAudio is a portable audio I/O library designed for cross-platform
