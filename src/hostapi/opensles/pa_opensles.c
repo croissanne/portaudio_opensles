@@ -50,8 +50,8 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <math.h>
-#include <malloc.h> // malloc
-#include <string.h> // memset
+#include <malloc.h>
+#include <string.h>
 #include <time.h>
 
 #include <android/api-level.h>
