@@ -893,7 +893,7 @@ static PaError InitializeOutputStream(PaOpenslesHostApiRepresentation *openslesH
     (*stream->outputStream->audioPlayer)->GetInterface( stream->outputStream->audioPlayer, SL_IID_PLAY, &stream->outputStream->playerItf );
     (*stream->outputStream->audioPlayer)->GetInterface( stream->outputStream->audioPlayer, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &stream->outputStream->outputBufferQueueItf );
 
-    stream->outputStream->outputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * stream->outputStream->bytesPerSample );
+    stream->outputStream->outputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * sizeof(void*) );
     for( i = 0; i < numberOfBuffers; ++i )
     {
         stream->outputStream->outputBuffers[i] = (void*) PaUtil_AllocateMemory( stream->framesPerHostCallback * stream->outputStream->bytesPerSample
@@ -995,7 +995,7 @@ static PaError InitializeInputStream( PaOpenslesHostApiRepresentation *openslesH
                                             SL_IID_RECORD,
                                             &stream->inputStream->recorderItf );
 
-    stream->inputStream->inputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * stream->inputStream->bytesPerSample );
+    stream->inputStream->inputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * sizeof(void*) );
     for( i = 0; i < numberOfBuffers; ++i )
     {
         stream->inputStream->inputBuffers[i] = (void*) PaUtil_AllocateMemory( stream->framesPerHostCallback
